@@ -1,0 +1,25 @@
+[Unit]
+Description=Terrascope API (FastAPI + SQLite)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=terrascope
+Group=terrascope
+WorkingDirectory=/opt/yunqi-naxi/p0-server
+EnvironmentFile=/opt/yunqi-naxi/p0-server/.env
+ExecStart=/opt/yunqi-naxi/p0-server/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# 基础加固：限制进程能力与系统写路径
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/yunqi-naxi/p0-server/data
+
+[Install]
+WantedBy=multi-user.target

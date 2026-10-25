@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「见山Terrascope」—— 多源数据融合的乡村文旅数字底座</title>
+<meta name="description" content="免费、零部署、面向丽江20间房以内纳西小微民宿的乡村文旅数字底座。天-地-人-物四源数据融合，全部数据免费公开、逐条可溯源。让数据可读、让生态可感、让纳西回家。">
+<meta name="theme-color" content="#1e3a5f">
+<meta property="og:title" content="「见山Terrascope」乡村文旅数字底座">
+<meta property="og:description" content="免费、零部署、面向丽江20间房以内纳西小微民宿。天-地-人-物四源数据融合，全部数据免费公开、逐条可溯源。">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="vendor/tailwind.css">
+<script src="vendor/echarts.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<style>
+  :root{
+    --naxi-blue:#1e3a5f;
+    --snow-mountain:#e8f0f5;
+    --lashi-green:#3a6b4d;
+    --daba-gold:#c19a4b;
+    --warm-orange:#d97744;
+  }
+  *{font-family:'PingFang SC','Microsoft YaHei','Hiragino Sans GB','SimSun',sans-serif;}
+  html{scroll-behavior:smooth;}
+  body{background:#fdfbf7;color:#1a1a1a;}
+  .hero-bg{
+    background:
+      linear-gradient(135deg, rgba(30,58,95,.75) 0%, rgba(58,107,77,.55) 100%),
+      url('vendor/hero-snow.jpg') center/cover;
+    min-height:90vh;
+  }
+  .naxi-pattern{
+    background-color:#1e3a5f;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(193,154,75,.15) 0, rgba(193,154,75,.15) 2px, transparent 2px, transparent 14px),
+      repeating-linear-gradient(-45deg, rgba(193,154,75,.15) 0, rgba(193,154,75,.15) 2px, transparent 2px, transparent 14px);
+  }
+  .card-hover{transition:all .3s ease;}
+  .card-hover:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(30,58,95,.18);}
+  .nav-link{position:relative;padding-bottom:4px;}
+  .nav-link::after{content:'';position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--daba-gold);transition:width .3s;}
+  .nav-link:hover::after,.nav-link.active::after{width:100%;}
+  .stat-num{font-family:'Georgia',serif;font-weight:700;background:linear-gradient(135deg,var(--daba-gold),var(--warm-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .daba-char{font-family:'KaiTi','STKaiti',serif;color:var(--daba-gold);font-size:1.4em;}
+  .section-title::before{content:'';display:inline-block;width:6px;height:28px;background:var(--daba-gold);margin-right:14px;vertical-align:middle;border-radius:2px;}
+  .lashi-card{background:linear-gradient(135deg,#e8f5ed,#f5faf2);border-left:4px solid var(--lashi-green);}
+  .snow-card{background:linear-gradient(135deg,#e8f0f5,#f5f9fc);border-left:4px solid var(--naxi-blue);}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  .float-anim{animation:float 4s ease-in-out infinite;}
+  .gradient-text{background:linear-gradient(135deg,var(--naxi-blue) 0%,var(--lashi-green) 50%,var(--daba-gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .tag-naxi{background:rgba(193,154,75,.15);color:var(--daba-gold);padding:3px 10px;border-radius:12px;font-size:.8em;display:inline-block;margin:2px;}
+  .tag-src{background:rgba(30,58,95,.08);color:var(--naxi-blue);padding:2px 8px;border-radius:10px;font-size:.72em;display:inline-block;margin:2px;}
+  .pulse-dot{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+  footer{background:var(--naxi-blue);}
+  /* ===== 质感增强 ===== */
+  /* 滚动进场 */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,.61,.36,1);}
+  .reveal.visible{opacity:1;transform:none;}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}.float-anim{animation:none;}}
+  @media print{.reveal{opacity:1 !important;transform:none !important;}}
+  /* 阅读进度条 */
+  #scrollBar{position:fixed;top:0;left:0;height:3px;width:0;z-index:110;background:linear-gradient(90deg,var(--naxi-blue),var(--lashi-green),var(--daba-gold));transition:width .1s linear;}
+  /* 回到顶部 */
+  #backTop{position:fixed;right:6vw;bottom:7vh;z-index:60;width:44px;height:44px;border-radius:50%;background:rgba(30,58,95,.85);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 8px 24px rgba(30,58,95,.35);backdrop-filter:blur(4px);}
+  #backTop.show{opacity:1;pointer-events:auto;}
+  #backTop:hover{transform:translateY(-3px);background:var(--naxi-blue);}
+  /* Hero 渐入 */
+  @keyframes heroIn{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+  .hero-anim{animation:heroIn .9s ease both;}
+  .hero-anim-1{animation-delay:.1s;}.hero-anim-2{animation-delay:.25s;}.hero-anim-3{animation-delay:.4s;}.hero-anim-4{animation-delay:.55s;}
+  /* 数字滚动 */
+  .stat-num{font-variant-numeric:tabular-nums;}
+</style>
+</head>
+<body>
+
+<!-- 阅读进度条 / 回到顶部 -->
+<div id="scrollBar"></div>
+<div id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="回到顶部">↑</div>
+
+<!-- ============ 顶部导航 ============ -->
+<nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full naxi-pattern flex items-center justify-center text-white font-bold">云</div>
+      <div>
+        <div class="font-bold text-lg text-gray-800">「见山Terrascope」</div>
+        <div class="text-xs text-gray-500">丽江 · 乡村文旅数字底座</div>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-8 text-sm">
+      <a href="#hero" class="nav-link text-gray-700 active">首页</a>
+      <a href="#routes" class="nav-link text-gray-700">小众路线</a>
+      <a href="#homestays" class="nav-link text-gray-700">纳西民宿</a>
+      <a href="#ecology" class="nav-link text-gray-700">生态科普</a>
+      <a href="#dashboard" class="nav-link text-gray-700">数据看版</a>
+      <a href="#culture" class="nav-link text-gray-700">文化名片</a>
+      <a href="#about" class="nav-link text-gray-700">关于我们</a>
+    </div>
+    <button class="md:hidden text-2xl text-gray-700" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">☰</button>
+  </div>
+  <div id="mobileMenu" class="hidden md:hidden border-t bg-white">
+    <div class="px-6 py-3 flex flex-col gap-3 text-sm">
+      <a href="#hero" class="py-1">首页</a>
+      <a href="#routes" class="py-1">小众路线</a>
+      <a href="#homestays" class="py-1">纳西民宿</a>
+      <a href="#ecology" class="py-1">生态科普</a>
+      <a href="#dashboard" class="py-1">数据看版</a>
+      <a href="#culture" class="py-1">文化名片</a>
+      <a href="#about" class="py-1">关于我们</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 首页 Hero ============ -->
+<section id="hero" class="hero-bg flex items-center justify-center text-white pt-20">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <div class="text-sm tracking-widest opacity-90 mb-6 hero-anim hero-anim-1">
+      <span class="daba-char">「</span> 让数据可读 · 让生态可感 · 让纳西回家 <span class="daba-char">」</span>
+    </div>
+    <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight hero-anim hero-anim-2">
+      <span class="gradient-text bg-white text-white">见山Terrascope</span>
+    </h1>
+    <p class="text-xl md:text-2xl mb-4 opacity-95 hero-anim hero-anim-3">多源数据融合的乡村文旅数字底座</p>
+    <p class="text-base md:text-lg opacity-80 mb-6 max-w-3xl mx-auto hero-anim hero-anim-3">
+      面向丽江 20 间房以内纳西家庭小微民宿的免费、零部署、轻量化工具<br>
+      天 · 卫星气象遥感 ｜ 地 · 权威公开监测 ｜ 人 · 在地走访众包 ｜ 物 · 自建设备增量拓展<br>
+      全部数据免费公开、逐条可溯源
+    </p>
+    <div class="flex flex-wrap gap-4 justify-center hero-anim hero-anim-4">
+      <a href="#homestays" class="px-8 py-3 bg-[var(--daba-gold)] text-white rounded-full font-medium hover:bg-[var(--warm-orange)] transition">浏览纳西民宿</a>
+      <a href="#dashboard" class="px-8 py-3 bg-white/10 backdrop-blur border-2 border-white text-white rounded-full font-medium hover:bg-white hover:text-[var(--naxi-blue)] transition">查看溯源数据</a>
+    </div>
+
+    <!-- 三大亮点卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 text-left">
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+        <div class="text-3xl mb-3">🏔️</div>
+        <h3 class="text-xl font-bold mb-2">纳西青年返乡</h3>
+        <p class="text-sm opacity-90">100% 丽江籍纳西族在校大学生</p>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+        <div class="text-3xl mb-3">🛰️</div>
+        <h3 class="text-xl font-bold mb-2">四源数据融合</h3>
+        <p class="text-sm opacity-90">天(气象卫星) · 地(权威监测) · 人(走访众包) · 物(预留协议即插即用)，云端优先可独立落地</p>
+      </div>
+      <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+        <div class="text-3xl mb-3">🦢</div>
+        <h3 class="text-xl font-bold mb-2">雪山湿地生态</h3>
+        <p class="text-sm opacity-90">玉龙雪山冰川 + 拉市海高原湿地，让生态保护可感知、可分享</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white opacity-70 float-anim">
+    <div class="text-xs">↓ 滚动探索</div>
+    <div class="text-2xl">⌄</div>
+  </div>
+</section>
+
+<!-- ============ 核心数据看板 ============ -->
+<section class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="18" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">实地走访纳西民宿</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="12" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">深度访谈经营者</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="9" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">类免费公开数据源</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="300" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">云端年成本上限（元）</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="20" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">数字化冷门路线</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="200" data-suffix="+">0</div>
+        <div class="text-sm text-gray-600">实拍素材</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="7" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">线上功能模块</div>
+      </div>
+      <div>
+        <div class="stat-num text-5xl mb-2" data-count="3" data-suffix="">0</div>
+        <div class="text-sm text-gray-600">政府对接意向</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 小众路线 ============ -->
+<section id="routes" class="py-20 bg-[var(--snow-mountain)]">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">小众路线</h2>
+    <p class="text-gray-600 mb-6 max-w-3xl">
+      避开人挤人的大研古城，我们数字化 20 条冷门线路。从白沙壁画到玉湖石头城，从束河茶马古道到拉市海马帮，让游客看到丽江真正的样子。
+    </p>
+    <div class="bg-white/80 border border-[var(--naxi-blue)]/20 rounded-xl px-6 py-4 mb-10 text-sm text-gray-700 max-w-3xl">
+      <b>路线数字化（P1 上线交互版）</b>：每条路线包含 <span class="tag-src">GeoJSON 轨迹</span> <span class="tag-src">SRTM 30m DEM 海拔剖面</span> <span class="tag-src">东巴文音频讲解点位</span>，底图使用天地图/高德开放平台免费合规额度。
+    </div>
+
+    <!-- 主题筛选器 -->
+    <div class="flex flex-wrap items-center gap-2 mb-4" id="routeFilters">
+      <span class="text-xs text-gray-500 mr-1">按主题筛选：</span>
+      <button data-theme="全部" class="route-chip px-4 py-1.5 rounded-full text-sm bg-[var(--naxi-blue)] text-white">全部</button>
+      <button data-theme="文化" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">文化</button>
+      <button data-theme="生态" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">生态</button>
+      <button data-theme="徒步" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">徒步</button>
+      <button data-theme="非遗" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">非遗</button>
+      <button data-theme="乡土" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">乡土</button>
+      <button data-theme="星空" class="route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">星空</button>
+      <span class="text-xs text-gray-500 ml-auto">按时长：</span>
+      <button data-len="全部" class="len-chip px-4 py-1.5 rounded-full text-sm bg-[var(--naxi-blue)] text-white">全部</button>
+      <button data-len="半日" class="len-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">半日</button>
+      <button data-len="一日" class="len-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">一日</button>
+      <button data-len="过夜" class="len-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]">过夜</button>
+    </div>
+    <div class="text-xs text-gray-500 mb-4" id="routeCount"></div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="routeGrid"></div>
+
+    <div class="text-center mt-10">
+      <button id="routeMore" class="px-8 py-3 bg-[var(--naxi-blue)] text-white rounded-full hover:bg-[var(--lashi-green)] transition">查看全部 20 条路线 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 路线详情弹窗 ============ -->
+<div id="routeModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" style="background:rgba(15,30,50,.55);backdrop-filter:blur(4px);">
+  <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl relative">
+    <button onclick="closeModal('routeModal')" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center text-gray-500 hover:text-gray-800 z-10" aria-label="关闭">✕</button>
+    <div id="routeModalBody"></div>
+  </div>
+</div>
+
+<!-- ============ 民宿详情弹窗 ============ -->
+<div id="stayModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" style="background:rgba(15,30,50,.55);backdrop-filter:blur(4px);">
+  <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-2xl relative">
+    <button onclick="closeModal('stayModal')" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center text-gray-500 hover:text-gray-800 z-10" aria-label="关闭">✕</button>
+    <div id="stayModalBody"></div>
+  </div>
+</div>
+
+<!-- ============ 纳西民宿 ============ -->
+<section id="homestays" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">纳西民宿</h2>
+    <p class="text-gray-600 mb-10 max-w-3xl">
+      民宿名录分两部分：下方演示卡为走访素材示例（非签约名录）；页面底部为底座 API 实时返回的已授权民宿（仅 public=1，脱敏字段、逐条溯源）。
+      每家民宿都配一段经营者口述短文，让游客认识"民宿背后的人"；这些走访与访谈素材，同时是我们"人源"感知与众包机制的需求依据。
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="homestayGrid"></div>
+
+    <div class="mt-8 text-center text-sm text-gray-500">
+      <span class="pulse-dot"></span>
+      已实地走访 18 家 · 名录经业主授权后由底座 API 对外展示，逐条标注来源 / 采集时间 / 更新频率
+    </div>
+
+    <div id="apiStays" class="mt-8" style="display:none">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">底座 API 实时返回</span>
+        <span class="text-sm text-gray-500" id="apiStaysMeta"></span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="apiStaysGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 生态科普 ============ -->
+<section id="ecology" class="py-20 bg-gradient-to-b from-[#f0f7f2] to-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">生态科普</h2>
+    <p class="text-gray-600 mb-10 max-w-3xl">
+      把雪山冰川退缩、湿地候鸟迁徙、水域面积变化这些"困在论文里的数据"，
+      翻译成游客能听懂、能感知、能分享的具体故事——每个数字都可溯源。
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- 玉龙雪山卡片 -->
+      <div class="snow-card rounded-2xl p-8 shadow-sm">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="text-5xl">🏔️</div>
+          <div>
+            <h3 class="text-2xl font-bold mb-1" style="color:var(--naxi-blue);">玉龙雪山 · 高山冰川</h3>
+            <p class="text-sm text-gray-600">海拔 5596m · 横断山脉最南端雪山</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-start gap-2">
+            <span class="text-red-500 font-bold">●</span>
+            <span><b>冰川退缩</b>：1980—2024 年间，玉龙雪山白水 1 号冰川退缩约 800m，部分冰舌已完全消失。</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-orange-500 font-bold">●</span>
+            <span><b>气候敏感</b>：每升温 1℃，雪线上移约 80—100m，纳西先民世代守护的"雪山圣境"正经历肉眼可见的变化。</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-blue-500 font-bold">●</span>
+            <span><b>低碳文旅</b>：游客通过民宿端查看"今日观山指数"，选择能见度高的日子上山，减少无效登山。</span>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-gray-200 text-xs text-gray-500">
+          数据来源：中科院玉龙雪山冰川与环境观测研究站公开摘要 · 卫星遥感（Sentinel-2/Landsat，NDSI 冰川指数，P1 全流程自动化）
+        </div>
+      </div>
+
+      <!-- 拉市海卡片 -->
+      <div class="lashi-card rounded-2xl p-8 shadow-sm">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="text-5xl">🦢</div>
+          <div>
+            <h3 class="text-2xl font-bold mb-1" style="color:var(--lashi-green);">拉市海 · 高原湿地</h3>
+            <p class="text-sm text-gray-600">海拔 2440m · 国际重要湿地 · 候鸟迁徙驿站</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-start gap-2">
+            <span class="text-green-600 font-bold">●</span>
+            <span><b>候鸟迁徙</b>：每年 11 月—次年 3 月，超过 8 万只候鸟途经此地，包括黑颈鹤、灰鹤、中华秋沙鸭等保护物种。</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-amber-600 font-bold">●</span>
+            <span><b>水质监测</b>：2020 年起氨氮浓度逐年下降 12%，反映禁渔 + 退塘还湿成效显著。</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="text-cyan-600 font-bold">●</span>
+            <span><b>环境舒适度</b>：基于免费气象数据（温湿度/风速/云量）计算高原户外舒适度指数，替代单一"负氧离子"口径；秋季"体感舒适"天数占比约七成（推算方式见数据来源声明）。</span>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-gray-200 text-xs text-gray-500">
+          数据来源：拉市海高原湿地保护中心公开摘要 · 生态环境部公开监测 · Open-Meteo / 和风天气免费气象数据
+        </div>
+      </div>
+    </div>
+
+    <!-- 低碳住宿指南 -->
+    <div class="mt-10 bg-gradient-to-r from-[var(--lashi-green)] to-[var(--naxi-blue)] text-white rounded-2xl p-8">
+      <h3 class="text-2xl font-bold mb-4">🌿 高原低碳住宿指南</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+        <div>
+          <div class="font-bold mb-2">💡 用电</div>
+          <p class="opacity-90">客房空调夏季 ≥ 26℃、冬季 ≤ 20℃；离开房间断电；自带牙刷牙膏。</p>
+        </div>
+        <div>
+          <div class="font-bold mb-2">💧 用水</div>
+          <p class="opacity-90">高原水源珍贵，洗澡 ≤ 15 分钟；不污染拉市海入湖支流。</p>
+        </div>
+        <div>
+          <div class="font-bold mb-2">🗑️ 垃圾</div>
+          <p class="opacity-90">所有垃圾打包带回丽江城区；湿地周边禁止一次性塑料制品。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 数据看版 ============ -->
+<section id="dashboard" class="py-20 bg-[var(--snow-mountain)]">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">数据看版</h2>
+    <p class="text-gray-600 mb-10 max-w-3xl">
+      全部图表基于 <b>9 类免费公开数据源</b>生成，每张图标注<b>来源 · 更新时间 · 更新频率</b>，全程可溯源。
+      当前为基于公开历史数据的演示版；P0 阶段（1—2 个月）接入实时 API，P1 阶段上线观山指数预测与卫星遥感全流程。
+    </p>
+
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg">玉龙雪山观山指数 · 过去 30 日</h3>
+        <span class="text-xs text-gray-500"><span class="pulse-dot"></span> 演示版 · 公开历史摘要</span>
+      </div>
+      <div id="chart-snow" style="height:320px;"></div>
+      <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+        来源：<span class="tag-src">Open-Meteo 历史天气 API（免费无密钥）</span> <span class="tag-src">和风天气免费订阅（实时/预报）</span>
+        更新频率：逐时 · P1 将以云量/降水/湿度/能见度训练观山指数预测模型，如实公布回测准确率（目标 ≥75%）
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg">冰川与水域时序动态 · 卫星遥感（相对指数）</h3>
+        <span class="text-xs text-gray-500"><span class="pulse-dot"></span> 演示版 · 相对指数 1990=100</span>
+      </div>
+      <div id="chart-remote" style="height:320px;"></div>
+      <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+        来源：<span class="tag-src">Sentinel-2 / Landsat 免费卫星影像</span> <span class="tag-src">NDSI 冰川指数</span> <span class="tag-src">NDWI 水域指数</span>
+        更新频率：过境重访 · 采用相对指数口径避免绝对值误导 · P1 先跑通拉市海水域面积单指标全流程，再拓展玉龙雪山冰川分析
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <h3 class="font-bold text-lg mb-4">拉市海候鸟迁徙指数 · 月度趋势</h3>
+        <div id="chart-bird" style="height:280px;"></div>
+        <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+          来源：<span class="tag-src">保护区公开越冬水鸟统计</span> 更新频率：季 · 带溯源候鸟数据库（P1 上线）
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <h3 class="font-bold text-lg mb-4">湿地水质关键指标 · 年度对比</h3>
+        <div id="chart-water" style="height:280px;"></div>
+        <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+          来源：<span class="tag-src">拉市海湿地公开年报</span> <span class="tag-src">生态环境部公开监测</span> 更新频率：年 · 引用公开摘要，以原始发布为准
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-lg mb-4">民宿端实时生态数据 · 示意</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
+          <div class="text-xs text-gray-500 mb-1">空气 PM2.5</div>
+          <div class="text-3xl font-bold text-blue-600">18</div>
+          <div class="text-xs text-gray-400">μg/m³ · 优</div>
+          <div class="text-[10px] text-gray-400 mt-1">来源：生态环境部城市站</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center">
+          <div class="text-xs text-gray-500 mb-1">环境舒适度</div>
+          <div class="text-3xl font-bold text-green-600">76</div>
+          <div class="text-xs text-gray-400">指数 · 适宜</div>
+          <div class="text-[10px] text-gray-400 mt-1">口径：温湿风综合（Open-Meteo）</div>
+        </div>
+        <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 text-center">
+          <div class="text-xs text-gray-500 mb-1">温度</div>
+          <div class="text-3xl font-bold text-amber-600">18</div>
+          <div class="text-xs text-gray-400">℃ · 舒适</div>
+          <div class="text-[10px] text-gray-400 mt-1">来源：和风天气免费订阅</div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center">
+          <div class="text-xs text-gray-500 mb-1">湿度</div>
+          <div class="text-3xl font-bold text-purple-600">62</div>
+          <div class="text-xs text-gray-400">% · 适宜</div>
+          <div class="text-[10px] text-gray-400 mt-1">来源：和风天气免费订阅</div>
+        </div>
+      </div>
+      <div class="mt-4 text-xs text-gray-500 text-center">
+        * P0 阶段（1—2 个月）接入实时 API；自建传感器为「物源」增量拓展——云端已预留 ESP32 接入协议（设备 ID / 统一 JSON 上报 / OTA），设备到位即插即用、云端代码零修改
+      </div>
+    </div>
+
+    <!-- 数据来源清单与合规声明 -->
+    <div class="bg-white rounded-2xl shadow-sm p-8 mt-8">
+      <h3 class="text-xl font-bold mb-6">数据来源清单（9 类 · 全部免费公开）</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-[var(--snow-mountain)] text-left">
+              <th class="px-4 py-3 rounded-tl-xl">数据类别</th>
+              <th class="px-4 py-3">免费来源</th>
+              <th class="px-4 py-3">更新频率</th>
+              <th class="px-4 py-3 rounded-tr-xl">平台用途</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="px-4 py-3">逐时温湿度/云量/降水/风速历史</td><td class="px-4 py-3">Open-Meteo 免费无密钥 API（丽江定点坐标）</td><td class="px-4 py-3">逐时</td><td class="px-4 py-3">模型训练与历史回看</td></tr>
+            <tr><td class="px-4 py-3">实时天气/预报/能见度</td><td class="px-4 py-3">和风天气免费订阅</td><td class="px-4 py-3">逐时</td><td class="px-4 py-3">实时看板、观山指数</td></tr>
+            <tr><td class="px-4 py-3">空气质量 AQI/PM2.5</td><td class="px-4 py-3">生态环境部全国城市空气质量实时发布平台（历史由和风空气 API 补充）</td><td class="px-4 py-3">逐时</td><td class="px-4 py-3">空气质量展示</td></tr>
+            <tr><td class="px-4 py-3">卫星遥感时序</td><td class="px-4 py-3">Sentinel-2 / Landsat 免费影像（NDSI 冰川、NDWI 水域指数）</td><td class="px-4 py-3">过境重访</td><td class="px-4 py-3">冰川与水域时序分析</td></tr>
+            <tr><td class="px-4 py-3">30m 高程 DEM</td><td class="px-4 py-3">SRTM 免费数据</td><td class="px-4 py-3">静态</td><td class="px-4 py-3">徒步路线海拔剖面</td></tr>
+            <tr><td class="px-4 py-3">合规底图</td><td class="px-4 py-3">天地图 / 高德开放平台免费额度</td><td class="px-4 py-3">—</td><td class="px-4 py-3">生态点位一张图</td></tr>
+            <tr><td class="px-4 py-3">权威对照</td><td class="px-4 py-3">中科院玉龙雪山冰川站、拉市海湿地公开年报</td><td class="px-4 py-3">年</td><td class="px-4 py-3">数据校验</td></tr>
+            <tr><td class="px-4 py-3">生物多样性</td><td class="px-4 py-3">保护区公开越冬水鸟统计</td><td class="px-4 py-3">季</td><td class="px-4 py-3">带溯源候鸟数据库</td></tr>
+            <tr><td class="px-4 py-3">文旅宏观</td><td class="px-4 py-3">丽江统计公报、文旅局公开数据</td><td class="px-4 py-3">年</td><td class="px-4 py-3">游客量与生态负荷关联分析</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 class="font-bold mt-8 mb-3">数据合规与来源声明</h4>
+      <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+        <li>所有数据逐条标注来源、更新时间与更新频率，全程可溯源。</li>
+        <li>仅使用免费公开合规渠道；不发布未经验证的环境结论，自建传感器数据上线前将标注设备与口径。</li>
+        <li>游客众包打卡为匿名设计，不采集任何个人信息。</li>
+        <li>本平台不涉及订房、交易与政府监管职能，数据仅用于科普展示与体验提升。</li>
+        <li>权威数据（冰川站、湿地年报）仅引用公开摘要，深入数据以原始发布为准。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 文化名片（东巴文每日一词 + 生态名片生成器） ============ -->
+<section id="culture" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">文化名片</h2>
+    <p class="text-gray-600 mb-10 max-w-3xl">
+      东巴文数字图鉴与云端生态名片，是本项目独有的轻量化文化护城河：
+      一个让象形文字每天"活"在民宿里，一个让生态数据变成民宿可分享的数字资产。
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- 东巴文每日一词 -->
+      <div class="naxi-pattern rounded-2xl p-8 text-white shadow-md">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold">东巴文 · 每日一词</h3>
+          <button id="dabaNext" class="text-xs bg-white/15 hover:bg-white/25 px-4 py-2 rounded-full transition">换一个 ↻</button>
+        </div>
+        <div class="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+          <div class="flex items-center gap-5">
+            <div id="dabaGlyph" class="daba-char text-7xl" style="color:var(--daba-gold);">❄</div>
+            <div>
+              <div class="text-2xl font-bold mb-1" id="dabaWord">雪</div>
+              <div class="text-xs opacity-70" id="dabaPinyin">东巴字形（象形示意）</div>
+            </div>
+          </div>
+          <div class="mt-4 text-sm opacity-90" id="dabaGlyphDesc">字形：连绵雪峰之下缀以三点，示雪花飘落之形。</div>
+          <div class="mt-2 text-sm opacity-80" id="dabaMeaning">释义：冰雪。</div>
+          <div class="mt-2 text-sm opacity-80" id="dabaNote">文化注：玉龙雪山被纳西先民尊为神山，"雪"是圣洁的象征。</div>
+        </div>
+        <div class="mt-4 text-xs opacity-60">
+          东巴文数字图鉴库（字形 · 读音 · 释义对照）P1 上线；词条经文化顾问审校后发布。小程序每日一词推送同步开放。
+        </div>
+      </div>
+
+      <!-- 生态名片生成器 -->
+      <div class="bg-[var(--snow-mountain)] rounded-2xl p-8 shadow-md">
+        <h3 class="text-xl font-bold mb-1" style="color:var(--naxi-blue);">云端生态名片生成器</h3>
+        <p class="text-xs text-gray-500 mb-5">自动渲染民宿专属实时生态数据卡片 · P1 支持一键导出分享图</p>
+        <div class="flex flex-wrap gap-3 mb-5">
+          <select id="ecoPick" class="flex-1 min-w-[120px] px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm"></select>
+          <button id="ecoGen" class="px-6 py-2.5 bg-[var(--naxi-blue)] text-white rounded-xl text-sm hover:bg-[var(--lashi-green)] transition">生成名片</button>
+          <button id="ecoDl" class="px-4 py-2.5 bg-[var(--daba-gold)] text-white rounded-xl text-sm hover:opacity-90 transition" title="导出分享图">↓ 导出</button>
+        </div>
+        <div id="ecoCard" class="rounded-2xl p-6 text-white shadow-lg" style="background:linear-gradient(135deg,#1e3a5f 0%,#3a6b4d 100%);">
+          <div class="text-xs opacity-70 mb-1">「见山Terrascope」生态名片 · 演示</div>
+          <div class="text-2xl font-bold mb-4" id="ecoName">云上纳西</div>
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="bg-white/10 rounded-lg py-2"><div class="text-lg font-bold" id="ecoPm">18</div><div class="text-[10px] opacity-70">PM2.5</div></div>
+            <div class="bg-white/10 rounded-lg py-2"><div class="text-lg font-bold" id="ecoComfort">76</div><div class="text-[10px] opacity-70">舒适度</div></div>
+            <div class="bg-white/10 rounded-lg py-2"><div class="text-lg font-bold" id="ecoTemp">18℃</div><div class="text-[10px] opacity-70">温度</div></div>
+            <div class="bg-white/10 rounded-lg py-2"><div class="text-lg font-bold" id="ecoView">82</div><div class="text-[10px] opacity-70">观山指数</div></div>
+          </div>
+          <div class="mt-3 text-xs opacity-90" id="ecoDate"></div>
+          <div class="mt-1 text-xs opacity-80">让数据可读 · 让生态可感 · 让纳西回家</div>
+          <div class="mt-1 text-[10px] opacity-50">数据来源：Open-Meteo / 和风天气 / 生态环境部（演示版）· 二维码位 P1 开放</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 关于我们 ============ -->
+<section id="about" class="py-20 bg-[var(--snow-mountain)]">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="section-title text-3xl md:text-4xl font-bold mb-3">关于我们</h2>
+    <p class="text-gray-600 mb-10 max-w-3xl">
+      天津科技大学人工智能学院 · 物联网工程专业 · 100% 丽江籍纳西族在校大学生团队。
+    </p>
+
+    <!-- 三大亮点放大版 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="bg-gradient-to-br from-[#fdf6e3] to-white border-l-4 border-[var(--daba-gold)] rounded-xl p-6">
+        <div class="text-3xl mb-3">🏠</div>
+        <h3 class="font-bold text-lg mb-2">家乡情怀</h3>
+        <p class="text-sm text-gray-700">我们 100% 是丽江籍纳西族大学生。我们回到家乡做这件事，不是为了比赛加分，而是为了家乡的父老乡亲。</p>
+      </div>
+      <div class="bg-gradient-to-br from-[#e8f0f5] to-white border-l-4 border-[var(--naxi-blue)] rounded-xl p-6">
+        <div class="text-3xl mb-3">🛰️</div>
+        <h3 class="font-bold text-lg mb-2">科技赋能</h3>
+        <p class="text-sm text-gray-700">物联网工程专业所学，回到家乡服务小微民宿。数字底座的最高境界，不是更复杂的硬件，而是更温暖的接口——云端优先，数据先行。</p>
+      </div>
+      <div class="bg-gradient-to-br from-[#e8f5ed] to-white border-l-4 border-[var(--lashi-green)] rounded-xl p-6">
+        <div class="text-3xl mb-3">🌿</div>
+        <h3 class="font-bold text-lg mb-2">生态价值</h3>
+        <p class="text-sm text-gray-700">玉龙雪山与拉市海，是丽江的根，也是中国高原生态保护的重要拼图。我们让游客看见它们、保护它们。</p>
+      </div>
+    </div>
+
+    <!-- 项目基本信息表 -->
+    <div class="bg-white rounded-2xl p-8 shadow-sm">
+      <h3 class="text-xl font-bold mb-6">项目基本信息</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">项目名称</div>
+          <div class="flex-1 font-medium">「见山Terrascope」—— 多源数据融合的乡村文旅数字底座</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">赛道归属</div>
+          <div class="flex-1 font-medium">高教主赛道 / 青年红色筑梦之旅 / 乡村振兴赛道</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">申报高校</div>
+          <div class="flex-1 font-medium">天津科技大学 · 人工智能学院 · 物联网工程</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">技术架构</div>
+          <div class="flex-1 font-medium">天-地-人-物四源融合感知 · 云端优先 · 自建硬件为增量拓展（预留 ESP32/OTA 协议）</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">年运行成本</div>
+          <div class="flex-1 font-medium">≤ 300 元（学生服务器 + 域名，9 类数据源全部免费）</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">服务对象</div>
+          <div class="flex-1 font-medium">丽江 20 间房以内纳西家庭小微民宿</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">核心理念</div>
+          <div class="flex-1 font-medium">让数据可读 · 让生态可感 · 让纳西回家</div>
+        </div>
+        <div class="flex border-b border-gray-200 py-2">
+          <div class="w-32 text-gray-500">数据合规</div>
+          <div class="flex-1 font-medium">全部数据标注来源/时间/频率 · 不采集个人信息 · 不涉订房与监管</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer class="text-white py-12">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full naxi-pattern flex items-center justify-center text-white font-bold">云</div>
+          <div class="font-bold text-lg">「见山Terrascope」</div>
+        </div>
+        <p class="text-sm opacity-80">多源数据融合的乡村文旅数字底座</p>
+        <p class="text-sm opacity-80 mt-1">让数据可读、让生态可感、让纳西回家</p>
+      </div>
+      <div>
+        <h4 class="font-bold mb-3">快速导航</h4>
+        <ul class="space-y-2 text-sm opacity-80">
+          <li><a href="#routes" class="hover:opacity-100">小众路线</a></li>
+          <li><a href="#ecology" class="hover:opacity-100">生态科普</a></li>
+          <li><a href="#dashboard" class="hover:opacity-100">数据看版（含数据来源声明）</a></li>
+          <li><a href="#culture" class="hover:opacity-100">文化名片</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold mb-3">联系我们</h4>
+        <ul class="space-y-2 text-sm opacity-80">
+          <li>📍 天津科技大学 · 人工智能学院</li>
+          <li>🌐 项目主页（GitHub Pages 部署中）</li>
+          <li>📮 联系邮箱（待补）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/20 pt-6 text-center text-sm opacity-70">
+      © 2026 「见山Terrascope」项目组 · 天津科技大学 · 仅供互联网+大赛申报使用<br>演示数据最后更新：2026-09-21 · 正式版以底座 API 实时返回并逐条标注来源/时间/频率
+    </div>
+  </div>
+</footer>
+
+<script>
+// ============ 路线数据（20 条 · 冷门线路数字化） ============
+// 海拔为公开地理资料常见值；海拔剖面为演示示意，P1 接入 SRTM 30m DEM 实测数据
+const routes = [
+  { name:'白沙壁画 · 纳西古韵', area:'玉龙雪山', theme:'文化', len:'半日', emoji:'🏔️', grad:'from-blue-400 to-blue-600',
+    desc:'明代纳西壁画 + 白沙古镇 + 雪山观景台，半日深度文化体验', alt:'2450—2600m',
+    profile:[2450,2470,2500,2540,2570,2600,2560,2510,2460], spots:['白沙古镇','大宝积宫壁画','雪山观景台'], season:'四季皆宜' },
+  { name:'拉市海 · 高原湿地观鸟', area:'拉市海', theme:'生态', len:'一日', emoji:'🦢', grad:'from-green-400 to-green-600',
+    desc:'候鸟迁徙季 + 湿地科普 + 纳西打渔村访问，一日生态研学', alt:'2440m（湖面）',
+    profile:[2440,2440,2450,2460,2450,2440,2440,2435,2440], spots:['湿地观鸟栈道','纳西打渔村','环湖骑行段'], season:'11月—次年3月' },
+  { name:'玉湖村 · 石头城记忆', area:'玉龙雪山', theme:'乡土', len:'一日', emoji:'🏘️', grad:'from-amber-400 to-orange-600',
+    desc:'洛克故居 + 石头民居 + 雪山倒影，深度纳西乡土', alt:'2600—2750m',
+    profile:[2600,2620,2650,2700,2750,2720,2680,2640,2600], spots:['洛克故居','石头民居群','玉湖倒影机位'], season:'四季皆宜' },
+  { name:'束河 · 茶马古道马帮', area:'茶马古道', theme:'文化', len:'半日', emoji:'🐎', grad:'from-purple-400 to-purple-600',
+    desc:'古道遗迹 + 马帮文化 + 束河古镇，半日轻徒步', alt:'2450—2550m',
+    profile:[2450,2480,2500,2550,2520,2480,2450], spots:['束河四方街','古道马帮遗迹','青龙桥'], season:'四季皆宜' },
+  { name:'东巴谷 · 文字活化石', area:'玉龙雪山', theme:'非遗', len:'半日', emoji:'📜', grad:'from-rose-400 to-rose-600',
+    desc:'东巴文字博物馆 + 东巴造纸 + 东巴画体验，半日非遗之旅', alt:'2500m',
+    profile:[2500,2510,2520,2530,2520,2510,2500], spots:['东巴文字博物馆','东巴造纸坊','东巴画体验点'], season:'四季皆宜' },
+  { name:'高原星空 · 纳西夜话', area:'玉龙雪山', theme:'星空', len:'过夜', emoji:'🌌', grad:'from-teal-400 to-teal-600',
+    desc:'海拔 2400m 民宿 + 星空观测 + 纳西篝火晚会，过夜深度体验', alt:'2400m（宿营地）',
+    profile:[2400,2420,2450,2480,2450,2420,2400], spots:['民宿星空露台','篝火晚会场','凌晨观星点'], season:'旱季（10—5月）' },
+  { name:'文海 · 高山草甸花海', area:'文海村', theme:'生态', len:'一日', emoji:'🌼', grad:'from-lime-400 to-green-600',
+    desc:'海拔 3100m 高原湖泊 + 高山草甸 + 应季花海，玉龙雪山背后的隐世村', alt:'3100—3250m',
+    profile:[3100,3130,3170,3210,3250,3200,3150,3100], spots:['文海湖','高山草甸','纳西牧屋'], season:'5—9月' },
+  { name:'文笔海 · 静水观山', area:'文笔山', theme:'生态', len:'半日', emoji:'🏔️', grad:'from-sky-400 to-blue-600',
+    desc:'丽江坝子南缘静水湖，文笔峰倒影 + 环湖步道，本地人才知道的清晨机位', alt:'2400—2500m',
+    profile:[2400,2430,2460,2500,2470,2440,2400], spots:['文笔海环湖步道','文笔峰观景点','湿地木栈道'], season:'四季皆宜' },
+  { name:'九子海 · 隐世高山湖', area:'九子海村', theme:'徒步', len:'一日', emoji:'💧', grad:'from-cyan-400 to-teal-600',
+    desc:'雪山脚下高山湖泊群 + 原始村落，徒步爱好者的小众秘境', alt:'2800—2950m',
+    profile:[2800,2840,2880,2920,2950,2900,2850,2800], spots:['九子海湖群','高山牧场','原始云杉林'], season:'6—10月' },
+  { name:'白沙扎染 · 蓝白手作', area:'白沙古镇', theme:'非遗', len:'半日', emoji:'🧵', grad:'from-indigo-400 to-blue-600',
+    desc:'纳西传统扎染工坊半日体验，带走一块自己染的蓝白布', alt:'2450m',
+    profile:[2450,2455,2460,2460,2455,2450], spots:['扎染工坊','古镇巷弄','染布晾晒场'], season:'四季皆宜' },
+  { name:'格拉丹 · 高山杜鹃海', area:'格拉丹', theme:'徒步', len:'过夜', emoji:'🌺', grad:'from-fuchsia-400 to-rose-600',
+    desc:'海拔 3300m 高山杜鹃花海 + 星空营地，五六月限定徒步线', alt:'3100—3500m',
+    profile:[3100,3180,3260,3340,3420,3500,3430,3340,3200,3100], spots:['杜鹃花海带','格拉丹草甸','星空营地'], season:'5—6月' },
+  { name:'神龙三潭 · 原始森林', area:'玉龙雪山', theme:'徒步', len:'一日', emoji:'🌲', grad:'from-emerald-400 to-green-700',
+    desc:'原始云杉冷杉林 + 三级叠潭，负氧离子拉满的森林浴线', alt:'2700—3000m',
+    profile:[2700,2760,2830,2900,2960,3000,2930,2850,2760,2700], spots:['云杉坪入口','一级潭','三级潭瀑布'], season:'6—10月' },
+  { name:'指云寺 · 禅意半日', area:'拉市海', theme:'文化', len:'半日', emoji:'🛕', grad:'from-amber-400 to-yellow-600',
+    desc:'丽江五大寺之一，面朝拉市海的静谦古刹，游客罕至', alt:'2500m',
+    profile:[2500,2510,2520,2530,2520,2500], spots:['指云寺','山门古柏','俯瞰拉市海观景台'], season:'四季皆宜' },
+  { name:'美泉 · 骑马下海线', area:'拉市海', theme:'乡土', len:'半日', emoji:'🐴', grad:'from-orange-400 to-amber-600',
+    desc:'纳西村落马道 + 果园 + 湖畔草甸，体验在地人日常骑路线', alt:'2450—2550m',
+    profile:[2450,2480,2520,2550,2510,2470,2450], spots:['美泉村','果园段','湖畔草甸'], season:'四季皆宜' },
+  { name:'玉水寨 · 东巴溯源', area:'玉龙雪山', theme:'非遗', len:'半日', emoji:'⛲', grad:'from-blue-400 to-cyan-600',
+    desc:'纳西东巴教圣地 + 三叠水瀑布群，看神泉与东巴祭祀文化', alt:'2600m',
+    profile:[2600,2620,2640,2660,2640,2620,2600], spots:['神泉三叠水','东巴什罗庙','白沙细乐展演'], season:'四季皆宜' },
+  { name:'石头城 · 金沙江峡谷', area:'宝山石头城', theme:'徒步', len:'过夜', emoji:'🏰', grad:'from-stone-400 to-gray-700',
+    desc:'金沙江畔整石之城 + 峡谷观景，两日深度徒步的入门经典', alt:'1700—1800m',
+    profile:[1720,1750,1780,1800,1780,1750,1720], spots:['石头城民居群','金沙江观景台','梯田石阶'], season:'10—次年4月' },
+  { name:'候鸟科考 · 湿地研学', area:'拉市海', theme:'生态', len:'一日', emoji:'🔭', grad:'from-green-400 to-emerald-700',
+    desc:'望远镜观鸟 + 候鸟数据记录体验，跟着湿地保护中心公开科普走一天', alt:'2440m',
+    profile:[2440,2440,2450,2455,2450,2440,2440], spots:['观鸟屋','科普展板步道','数据记录体验点'], season:'11月—次年3月' },
+  { name:'雪山火塘 · 庭院夜话', area:'白沙古镇', theme:'星空', len:'过夜', emoji:'🔥', grad:'from-orange-500 to-red-600',
+    desc:'纳西火塘 + 民宿庭院夜话 + 次日清晨观山指数选时段上山', alt:'2450m',
+    profile:[2450,2455,2460,2465,2460,2450], spots:['火塘客厅','庭院星空位','清晨观山点'], season:'四季皆宜' },
+  { name:'束河后山 · 晨雾徒步', area:'束河', theme:'徒步', len:'半日', emoji:'🌄', grad:'from-slate-400 to-blue-700',
+    desc:'清晨 6 点出发的本地人晨练线，雾中俯瞰束河全景 + 早餐回城', alt:'2450—2900m',
+    profile:[2450,2540,2650,2760,2900,2780,2620,2500,2450], spots:['束河后山口','晨雾观景台','下山早餐点'], season:'四季皆宜' },
+  { name:'纳西农事 · 一日村民', area:'玉湖村', theme:'乡土', len:'一日', emoji:'🌾', grad:'from-yellow-400 to-orange-600',
+    desc:'跟着纳西阿妈下地：应季农事 + 土灶午餐 + 院子晒秋，深度乡土体验', alt:'2600m',
+    profile:[2600,2610,2620,2630,2620,2610,2600], spots:['农田劳作点','土灶厨房','晒秋庭院'], season:'5—10月' },
+];
+
+// 路线渲染 + 筛选
+let routeTheme = '全部', routeLen = '全部', routeExpanded = false;
+const routeGrid = document.getElementById('routeGrid');
+function routeCard(r, i) {
+  return `
+  <div class="bg-white rounded-2xl overflow-hidden card-hover shadow-md cursor-pointer" onclick="openRoute(${i})">
+    <div class="h-48 bg-gradient-to-br ${r.grad} relative">
+      <div class="absolute inset-0 flex items-center justify-center text-6xl">${r.emoji}</div>
+      <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs" style="background:rgba(0,0,0,.45);color:#fff;">${r.area}</div>
+      <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-full text-xs">${r.alt}</div>
+    </div>
+    <div class="p-6">
+      <h3 class="font-bold text-lg mb-2">${r.name}</h3>
+      <p class="text-sm text-gray-600 mb-3">${r.desc}</p>
+      <div class="flex flex-wrap gap-1 items-center">
+        <span class="tag-naxi">${r.theme}</span><span class="tag-naxi">${r.len}</span>
+        <span class="text-xs text-[var(--naxi-blue)] ml-auto font-medium">详情 + 海拔剖面 →</span>
+      </div>
+    </div>
+  </div>`;
+}
+function renderRoutes() {
+  const list = routes
+    .map((r, i) => ({ ...r, _i: i }))
+    .filter(r => (routeTheme === '全部' || r.theme === routeTheme) && (routeLen === '全部' || r.len === routeLen));
+  const shown = routeExpanded ? list : list.slice(0, 6);
+  routeGrid.innerHTML = shown.map(r => routeCard(r, r._i)).join('') ||
+    '<div class="col-span-3 text-center text-gray-400 py-12">该组合下暂无路线，换个筛选试试</div>';
+  document.getElementById('routeCount').textContent =
+    `已收录 20 条冷门线路 · 当前筛选 ${list.length} 条${routeExpanded ? '' : '，默认展示前 6 条'}`;
+  const more = document.getElementById('routeMore');
+  more.style.display = (!routeExpanded && list.length > 6) ? '' : 'none';
+}
+function chipStyle(sel) {
+  return sel
+    ? 'route-chip px-4 py-1.5 rounded-full text-sm bg-[var(--naxi-blue)] text-white'
+    : 'route-chip px-4 py-1.5 rounded-full text-sm bg-white text-gray-600 border border-gray-200 hover:border-[var(--naxi-blue)]';
+}
+document.querySelectorAll('#routeFilters [data-theme]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    routeTheme = btn.dataset.theme; routeExpanded = false;
+    document.querySelectorAll('[data-theme]').forEach(b => { b.className = chipStyle(b.dataset.theme === routeTheme); });
+    renderRoutes();
+  });
+});
+document.querySelectorAll('#routeFilters [data-len]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    routeLen = btn.dataset.len; routeExpanded = false;
+    document.querySelectorAll('[data-len]').forEach(b => { b.className = chipStyle(b.dataset.len === routeLen); });
+    renderRoutes();
+  });
+});
+document.getElementById('routeMore').addEventListener('click', () => { routeExpanded = true; renderRoutes(); });
+renderRoutes(); // 初始渲染（默认前 6 条）
+
+// 弹窗通用
+function openModal(id) {
+  const m = document.getElementById(id);
+  m.classList.remove('hidden'); m.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  m.classList.add('hidden'); m.classList.remove('flex');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal('routeModal'); closeModal('stayModal'); }
+});
+['routeModal','stayModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
+});
+
+// 路线详情弹窗（含海拔剖面图 · 演示示意）
+let profileChart = null;
+function openRoute(i) {
+  const r = routes[i];
+  document.getElementById('routeModalBody').innerHTML = `
+    <div class="h-44 bg-gradient-to-br ${r.grad} relative flex items-center justify-center">
+      <div class="text-6xl">${r.emoji}</div>
+      <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs" style="background:rgba(0,0,0,.45);color:#fff;">${r.area}</div>
+    </div>
+    <div class="p-8">
+      <h3 class="text-2xl font-bold mb-2">${r.name}</h3>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="tag-naxi">主题 · ${r.theme}</span><span class="tag-naxi">时长 · ${r.len}</span>
+        <span class="tag-naxi">海拔 · ${r.alt}</span><span class="tag-naxi">最佳 · ${r.season}</span>
+      </div>
+      <p class="text-sm text-gray-700 mb-5">${r.desc}。点击沿途任一点位，即可在 P1 交互版中收听东巴文音频讲解（规划中）。</p>
+      <div class="bg-[var(--snow-mountain)] rounded-xl p-4 mb-5">
+        <div class="text-sm font-bold mb-1" style="color:var(--naxi-blue);">海拔剖面</div>
+        <div id="routeProfile" style="height:180px;"></div>
+      </div>
+      <div class="text-sm mb-2 font-bold text-gray-700">串联点位</div>
+      <div class="flex flex-wrap gap-2 mb-5">
+        ${r.spots.map((s, j) => `<span class="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs text-gray-600">${j + 1}. ${s}</span>`).join('')}
+      </div>
+      <div class="pt-4 border-t border-gray-100 text-xs text-gray-500">
+        溯源声明：海拔为公开地理资料常见值；海拔剖面为<b>演示示意数据</b>，P1 接入 <span class="tag-src">SRTM 30m DEM</span> 实测生成；
+        底图规划使用 <span class="tag-src">天地图/高德开放平台免费额度</span>；路线信息实地走访采集 · 更新频率：季度复核。
+      </div>
+    </div>`;
+  openModal('routeModal');
+  setTimeout(() => {
+    const el = document.getElementById('routeProfile');
+    if (!el) return;
+    if (profileChart) { profileChart.dispose(); profileChart = null; }
+    profileChart = echarts.init(el);
+    profileChart.setOption({
+      ...chartCommon,
+      tooltip: { trigger: 'axis', valueFormatter: v => v + ' m' },
+      grid: { left: 55, right: 15, top: 15, bottom: 25 },
+      xAxis: { type: 'category', data: r.profile.map((_, j) => `点位${j + 1}`), axisLine: { lineStyle: { color: '#ccc' } }, axisLabel: { fontSize: 10 } },
+      yAxis: { type: 'value', name: '海拔(m)', min: v => Math.floor(v.min / 100) * 100 - 100, axisLabel: { fontSize: 10 }, splitLine: { lineStyle: { type: 'dashed', color: '#e5e5e5' } } },
+      series: [{
+        name: '海拔', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6,
+        data: r.profile,
+        itemStyle: { color: '#1e3a5f' },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(58,107,77,.35)' }, { offset: 1, color: 'rgba(58,107,77,.03)' }] } }
+      }]
+    });
+  }, 60);
+}
+
+// 民宿数据（演示 · 走访素材示例，非签约名录）
+const homestays = [
+  { name: '和煦小院', owner: '和阿姨', room: 14, town: '束河古镇', tag: ['家庭温馨', '纳西火塘', '雪山观景'], emoji: '🏡', grad: 'from-amber-200 to-amber-400',
+    voice: '我在这院里住了三十年，娃娃去昆明读书了，房子空着可惜。客人来了我烧火塘给他们讲雪山的故事，走的时候都像亲戚。',
+    route: '束河 · 茶马古道马帮' },
+  { name: '湖畔栖', owner: '和叔叔', room: 8, town: '拉市海湿地', tag: ['湿地观鸟', '日出星空', '雪山视野'], emoji: '🌿', grad: 'from-green-200 to-green-400',
+    voice: '每年十一月鸟一来，我早上划船都放慢一点，怕惊着它们。住我家的客人，我带他们看黑颈鹤，比看啥景点都稀奇。',
+    route: '拉市海 · 高原湿地观鸟' },
+  { name: '云上纳西', owner: '和先生', room: 11, town: '白沙古镇', tag: ['东巴文化', '青年返乡', '壁画徒步'], emoji: '☁️', grad: 'from-blue-200 to-blue-400',
+    voice: '我在外头打过五年工，还是回来了。爷爷是东巴，我现在把他的画挂在大堂里，客人问起来我能讲一晚上。',
+    route: '白沙壁画 · 纳西古韵' },
+  { name: '玉湖石头屋', owner: '和奶奶', room: 6, town: '玉湖村', tag: ['石头民居', '洛克足迹', '雪山倒影'], emoji: '🏔️', grad: 'from-rose-200 to-rose-400',
+    voice: '这房子是我阿爸那辈垒的石头，冬暖夏凉。当年洛克就住在村子那头。客人喜欢在院里看雪山倒影，我给他们煮油茶。',
+    route: '玉湖村 · 石头城记忆' },
+  { name: '茶马驿站', owner: '和李叔', room: 12, town: '束河茶马古道', tag: ['马帮文化', '古道徒步', '庭院深深'], emoji: '🐎', grad: 'from-purple-200 to-purple-400',
+    voice: '我爷爷赶过马帮，家里还留着老铜铃。客人走古道前，我给他讲哪块石头是当年的歇脚台，走起来就不一样了。',
+    route: '束河 · 茶马古道马帮' },
+  { name: '东巴小院', owner: '和东巴', room: 9, town: '白沙东巴谷', tag: ['东巴文字', '非遗体验', '星空露台'], emoji: '📜', grad: 'from-teal-200 to-teal-400',
+    voice: '白天我教客人写东巴字，一个"家"字教十遍也不烦。晚上露台上满天星星，客人说在城里从来没见过这么多。',
+    route: '东巴谷 · 文字活化石' },
+];
+
+// 民宿渲染（点击"查看详情"打开口述短文弹窗）
+const grid = document.getElementById('homestayGrid');
+homestays.forEach((h, i) => {
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="bg-white rounded-2xl overflow-hidden card-hover shadow-md">
+      <div class="h-40 bg-gradient-to-br ${h.grad} relative flex items-center justify-center">
+        <div class="text-6xl opacity-80">${h.emoji}</div>
+        <div class="absolute top-3 right-3 bg-white/90 px-3 py-1 rounded-full text-xs">${h.town}</div>
+        <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-full text-xs">${h.room} 间客房</div>
+      </div>
+      <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-lg">${h.name}</h3>
+          <span class="text-xs text-gray-500">老板 · ${h.owner}</span>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-3">
+          ${h.tag.map(t => `<span class="tag-naxi">${t}</span>`).join('')}
+        </div>
+        <button onclick="openStay(${i})" class="w-full py-2 text-sm border-2 border-[var(--naxi-blue)] text-[var(--naxi-blue)] rounded-full hover:bg-[var(--naxi-blue)] hover:text-white transition">查看详情 →</button>
+      </div>
+    </div>
+  `);
+});
+
+// 民宿详情弹窗：口述短文 + 生态联动（演示数据）
+function openStay(i) {
+  const h = homestays[i];
+  document.getElementById('stayModalBody').innerHTML = `
+    <div class="h-40 bg-gradient-to-br ${h.grad} relative flex items-center justify-center">
+      <div class="text-6xl opacity-80">${h.emoji}</div>
+      <div class="absolute bottom-3 left-3 bg-white/90 px-3 py-1 rounded-full text-xs">${h.town}</div>
+    </div>
+    <div class="p-8">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-2xl font-bold">${h.name}</h3>
+        <span class="text-sm text-gray-500">老板 · ${h.owner} · ${h.room} 间客房</span>
+      </div>
+      <div class="flex flex-wrap gap-1 mb-5">${h.tag.map(t => `<span class="tag-naxi">${t}</span>`).join('')}</div>
+      <div class="border-l-4 border-[var(--daba-gold)] bg-[#fdf6e3] rounded-r-xl p-5 mb-5">
+        <div class="text-xs text-gray-500 mb-2">经营者口述 · 走访示例（演示素材）</div>
+        <p class="text-sm text-gray-700 leading-relaxed">${h.voice}</p>
+      </div>
+      <div class="bg-[var(--snow-mountain)] rounded-xl p-4 mb-5">
+        <div class="text-sm font-bold mb-2" style="color:var(--naxi-blue);">民宿端今日生态数据 · 演示</div>
+        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+          <div class="bg-white rounded-lg py-2"><div class="text-lg font-bold text-blue-600">18</div><div class="text-gray-400">PM2.5</div></div>
+          <div class="bg-white rounded-lg py-2"><div class="text-lg font-bold text-green-600">76</div><div class="text-gray-400">舒适度</div></div>
+          <div class="bg-white rounded-lg py-2"><div class="text-lg font-bold text-amber-600">18℃</div><div class="text-gray-400">温度</div></div>
+          <div class="bg-white rounded-lg py-2"><div class="text-lg font-bold text-purple-600">82</div><div class="text-gray-400">观山指数</div></div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-600">推荐搭配路线：<b>${h.route}</b></span>
+        <button onclick="closeModal('stayModal');openRoute(${routes.findIndex(r => r.name === h.route)})" class="px-4 py-2 bg-[var(--naxi-blue)] text-white rounded-full text-xs hover:bg-[var(--lashi-green)] transition">查看这条路线 →</button>
+      </div>
+      <div class="mt-5 pt-4 border-t border-gray-100 text-xs text-gray-500">
+        溯源声明：口述内容为走访素材示例（非签约名录）；生态数据为演示值，P0 接入实时 API；民宿名录经业主授权后由底座 API 对外展示，敏感字段永不出接口。
+      </div>
+    </div>`;
+  openModal('stayModal');
+}
+
+// ECharts 图
+const chartCommon = { textStyle: { fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' } };
+
+// 雪山观山指数
+const snowChart = echarts.init(document.getElementById('chart-snow'), null, { renderer: 'canvas' });
+const days = Array.from({length:30}, (_,i)=>`${i+1}日`);
+snowChart.setOption({
+  ...chartCommon,
+  tooltip: { trigger: 'axis' },
+  grid: { left: 40, right: 20, top: 30, bottom: 30 },
+  xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: '#ccc' } } },
+  yAxis: { type: 'value', name: '能见度指数', max: 100, splitLine: { lineStyle: { type: 'dashed', color: '#eee' } } },
+  series: [{
+    name: '观山指数',
+    type: 'line',
+    smooth: true,
+    data: [62,58,71,80,75,68,72,85,90,82,76,69,73,78,84,88,79,72,68,75,82,87,91,84,76,71,68,74,80,86],
+    areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{offset:0,color:'rgba(30,58,95,0.5)'},{offset:1,color:'rgba(30,58,95,0.05)'}] } },
+    itemStyle: { color: '#1e3a5f' },
+    lineStyle: { width: 3 },
+    markPoint: {
+      data: [{ type: 'max', name: '最佳观山日' }, { type: 'min', name: '最低' }],
+      symbolSize: 46, label: { fontSize: 10 }
+    },
+    markLine: { data: [{ type: 'average', name: '月均' }], lineStyle: { type: 'dashed', color: '#c19a4b' }, label: { formatter: '月均 {c}', fontSize: 10 } }
+  }]
+});
+
+// 卫星遥感时序（相对指数）
+const remoteChart = echarts.init(document.getElementById('chart-remote'), null, { renderer: 'canvas' });
+remoteChart.setOption({
+  ...chartCommon,
+  tooltip: { trigger: 'axis' },
+  legend: { bottom: 0, textStyle: { fontSize: 12 } },
+  dataZoom: [{ type: 'slider', height: 18, bottom: 24, brushSelect: false }, { type: 'inside' }],
+  grid: { left: 50, right: 20, top: 30, bottom: 70 },
+  xAxis: { type: 'category', data: ['1990','1996','2002','2008','2014','2019','2022','2026'], axisLine: { lineStyle: { color: '#ccc' } } },
+  yAxis: { type: 'value', name: '相对指数（1990=100）', max: 110, splitLine: { lineStyle: { type: 'dashed', color: '#eee' } } },
+  series: [
+    { name: '玉龙雪山冰川面积（NDSI）', type: 'line', smooth: true,
+      data: [100,96,89,81,72,64,55,48],
+      itemStyle: { color: '#1e3a5f' }, lineStyle: { width: 3 },
+      areaStyle: { color: 'rgba(30,58,95,0.08)' } },
+    { name: '拉市海水域面积（NDWI）', type: 'line', smooth: true,
+      data: [100,98,97,95,96,93,94,92],
+      itemStyle: { color: '#3a6b4d' }, lineStyle: { width: 3 } }
+  ]
+});
+
+// 候鸟迁徙指数
+const birdChart = echarts.init(document.getElementById('chart-bird'), null, { renderer: 'canvas' });
+birdChart.setOption({
+  ...chartCommon,
+  tooltip: { trigger: 'axis' },
+  grid: { left: 40, right: 20, top: 30, bottom: 30 },
+  xAxis: { type: 'category', data: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'], axisLine: { lineStyle: { color: '#ccc' } } },
+  yAxis: { type: 'value', name: '迁徙指数', splitLine: { lineStyle: { type: 'dashed', color: '#eee' } } },
+  series: [{
+    name: '候鸟迁徙指数',
+    type: 'bar',
+    data: [92,88,75,45,28,15,18,22,35,58,82,95],
+    itemStyle: { color: { type: 'linear', x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#3a6b4d'},{offset:1,color:'#7cb893'}] }, borderRadius: [6,6,0,0] }
+  }]
+});
+
+// 水质
+const waterChart = echarts.init(document.getElementById('chart-water'), null, { renderer: 'canvas' });
+waterChart.setOption({
+  ...chartCommon,
+  tooltip: { trigger: 'axis' },
+  legend: { bottom: 0, textStyle: { fontSize: 12 } },
+  grid: { left: 40, right: 20, top: 30, bottom: 50 },
+  xAxis: { type: 'category', data: ['2021','2022','2023','2024','2025'], axisLine: { lineStyle: { color: '#ccc' } } },
+  yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed', color: '#eee' } } },
+  series: [
+    { name: '氨氮(mg/L)', type: 'line', data: [0.85,0.72,0.65,0.58,0.48], itemStyle: { color: '#3a6b4d' }, smooth: true },
+    { name: '溶解氧(mg/L)', type: 'line', data: [6.2,6.8,7.1,7.5,7.9], itemStyle: { color: '#1e3a5f' }, smooth: true },
+    { name: 'pH值', type: 'line', data: [7.6,7.7,7.8,7.9,8.0], itemStyle: { color: '#c19a4b' }, smooth: true }
+  ]
+});
+
+// 东巴文每日一词（词条释义经文化顾问校订后于 P1 正式发布，此处为演示词条）
+const dabaWords = [
+  { glyph: '❄', word: '雪', desc: '字形：连绵雪峰之下缀以三点，示雪花飘落之形。', meaning: '释义：冰雪。', note: '文化注：玉龙雪山被纳西先民尊为神山，"雪"是圣洁的象征。' },
+  { glyph: '💧', word: '水', desc: '字形：一股泉水自山涧流出，波纹点点。', meaning: '释义：水。', note: '文化注：纳西人敬水，古城三眼井"头饮、二洗、三灌"的规矩沿用至今。' },
+  { glyph: '⛰️', word: '山', desc: '字形：三峰并立。', meaning: '释义：山。', note: '文化注：创世神话中，居那什罗神山是撑起宇宙的中柱。' },
+  { glyph: '🌙', word: '月', desc: '字形：一弯新月悬于天空。', meaning: '释义：月亮。', note: '文化注：纳西先民观月定农时，月亮是"天上的历书"。' },
+  { glyph: '🏠', word: '家', desc: '字形：人字形屋顶的木构房屋之形。', meaning: '释义：家、房屋。', note: '文化注："回到家园"是东巴经典中常见的祝祷语。' },
+];
+// "每日一词"按日期轮换：以 UTC 天数取模，同一天打开始终是同一个词
+let dabaIdx = Math.floor(Date.now() / 86400000) % dabaWords.length;
+let dabaUserIdx = null; // 用户手动切换后以手动为准
+function renderDaba() {
+  const w = dabaWords[dabaIdx];
+  document.getElementById('dabaGlyph').textContent = w.glyph;
+  document.getElementById('dabaWord').textContent = w.word;
+  document.getElementById('dabaGlyphDesc').textContent = w.desc;
+  document.getElementById('dabaMeaning').textContent = w.meaning;
+  document.getElementById('dabaNote').textContent = w.note;
+}
+document.getElementById('dabaNext').addEventListener('click', () => {
+  if (dabaUserIdx === null) dabaUserIdx = dabaIdx;
+  dabaUserIdx = (dabaUserIdx + 1) % dabaWords.length;
+  dabaIdx = dabaUserIdx;
+  renderDaba();
+});
+renderDaba();
+
+// 生态名片生成器（演示数据；P1 接实时 API + html2canvas 导出）
+const ecoPick = document.getElementById('ecoPick');
+homestays.forEach(h => {
+  const opt = document.createElement('option');
+  opt.value = h.name; opt.textContent = `${h.name}（${h.town}）`;
+  ecoPick.appendChild(opt);
+});
+function genEcoCard() {
+  const h = homestays.find(x => x.name === ecoPick.value);
+  const env = { pm25: 18, comfort: 76, temp: 18, view: 82 };
+  document.getElementById('ecoName').textContent = h.name;
+  document.getElementById('ecoPm').textContent = env.pm25;
+  document.getElementById('ecoComfort').textContent = env.comfort;
+  document.getElementById('ecoTemp').textContent = env.temp + '℃';
+  document.getElementById('ecoView').textContent = env.view;
+  const dateEl = document.getElementById('ecoDate');
+  if (dateEl) {
+    const d = new Date();
+    dateEl.textContent = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} · ${h.town}`;
+  }
+}
+document.getElementById('ecoGen').addEventListener('click', genEcoCard);
+
+// 名片 PNG 导出（html2canvas · 本地渲染不上传）
+document.getElementById('ecoDl').addEventListener('click', () => {
+  const card = document.getElementById('ecoCard');
+  html2canvas(card, { scale: 2, backgroundColor: null }).then(canvas => {
+    const a = document.createElement('a');
+    a.download = `见山Terrascope生态名片_${document.getElementById('ecoName').textContent}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+});
+genEcoCard();
+
+// 响应式
+window.addEventListener('resize', () => {
+  snowChart.resize();
+  remoteChart.resize();
+  birdChart.resize();
+  waterChart.resize();
+  if (profileChart) profileChart.resize();
+});
+
+// ===== 质感联动：阅读进度条 / 回到顶部 / 导航高亮 =====
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section[id]');
+const scrollBar = document.getElementById('scrollBar');
+const backTop = document.getElementById('backTop');
+function onScroll() {
+  const st = window.scrollY;
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  scrollBar.style.width = (h > 0 ? (st / h) * 100 : 0) + '%';
+  backTop.classList.toggle('show', st > 600);
+  let current = '';
+  sections.forEach(s => { if (st >= s.offsetTop - 100) current = s.id; });
+  navLinks.forEach(l => {
+    l.classList.remove('active');
+    if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+// ===== 滚动进场动画：各区块容器自动注入 reveal =====
+document.querySelectorAll('section > div.max-w-7xl > div').forEach(el => {
+  if (el.closest('#routeFilters') || el.classList.contains('reveal')) return;
+  el.classList.add('reveal');
+});
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      en.target.classList.add('visible');
+      io.unobserve(en.target);
+      // 数字滚动：进入视口时触发一次
+      en.target.querySelectorAll('[data-count]').forEach(startCount);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => {
+  const r = el.getBoundingClientRect();
+  if (r.top < window.innerHeight && r.bottom > 0) { el.classList.add('visible'); }
+  else { io.observe(el); }
+});
+// 兜底：任何原因漏网的 reveal，3.5 秒后强制可见（保证打印/录屏/快速锚跳不空白）
+setTimeout(() => {
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight * 2) {
+      el.classList.add('visible');
+      el.querySelectorAll('[data-count]').forEach(startCount);
+    }
+  });
+}, 3500);
+
+// ===== 数字滚动 CountUp =====
+function startCount(el) {
+  if (el._counted) return; el._counted = true;
+  const target = parseFloat(el.dataset.count);
+  const suffix = el.dataset.suffix || '';
+  const dur = 1400, t0 = performance.now();
+  (function tick(t) {
+    const k = Math.min((t - t0) / dur, 1);
+    const eased = 1 - Math.pow(1 - k, 3); // easeOutCubic
+    el.textContent = Math.round(target * eased) + suffix;
+    if (k < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+// 首屏数据条若已可见直接触发
+document.querySelectorAll('[data-count]').forEach(el => {
+  const r = el.getBoundingClientRect();
+  if (r.top < window.innerHeight && r.bottom > 0) startCount(el);
+});
+</script>
+<script>
+// 人源·民宿名录：底座 API 实时接入（仅已授权记录、脱敏字段；API 不可达时静默保留静态演示卡）
+(async () => {
+  const base = window.YUNQI_API || 'http://127.0.0.1:8000';
+  try {
+    const r = await fetch(base + '/api/stays');
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return;
+    const box = document.getElementById('apiStays');
+    box.style.display = '';
+    document.getElementById('apiStaysMeta').textContent =
+      `共 ${rows.length} 条已授权记录 · 每条含 来源/采集时间/更新频率 三要素（敏感字段永不出接口）`;
+    document.getElementById('apiStaysGrid').innerHTML = rows.map(s => `
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-1">
+          <h4 class="font-bold">${s.stay_name}</h4>
+          <span class="text-xs text-gray-500">${s.village}</span>
+        </div>
+        <div class="text-xs text-gray-500 mb-2">${s.rooms_total} 间客房${s.price_band ? ' · ' + s.price_band + ' 元/晚档' : ''}</div>
+        <div class="flex flex-wrap gap-1 text-xs text-gray-600">${[s.eco_features, s.culture_features].filter(Boolean).map(t => `<span class="px-2 py-0.5 bg-gray-100 rounded-full">${t}</span>`).join('')}</div>
+        <div class="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">来源：${s.source} · 采集：${s.collected_at} · 更新：${s.updated_freq}</div>
+      </div>`).join('');
+  } catch (e) { /* API 不可达：保留静态演示卡 */ }
+})();
+</script>
+</body>
+</html>

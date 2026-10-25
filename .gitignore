@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# 数据与模型产物（可由 scripts 重新生成）
+*.db
+*.sqlite3
+*.joblib
+data/model/
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 工作区工具
+.workbuddy/

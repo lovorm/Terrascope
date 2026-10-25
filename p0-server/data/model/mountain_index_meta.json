@@ -1,0 +1,34 @@
+{
+  "version": "lr-v1",
+  "trained_at": "2026-09-20",
+  "site": "玉龙雪山",
+  "n_days": 73,
+  "window": "2026-07-09 ~ 2026-09-19",
+  "evaluation": "walk-forward TimeSeriesSplit(5) 池化样本外结果",
+  "label_rule": "08:00-18:00 能见度中位数 ≥ 15000m 记为可观山（1）",
+  "threshold_m": 15000,
+  "features": [
+    "cloud_mean",
+    "precip_sum",
+    "humidity_mean",
+    "wind_max"
+  ],
+  "data_source": "Open-Meteo 预报系统存档能见度（past_days 上限 92 天）",
+  "sample_note": "窗口为近 3 个月，季节覆盖有限（雨季正值率低）；P1.1 接入 ERA5/CDS 能见度扩大样本，P2 用众包打卡校准",
+  "n_oos": 48,
+  "positive_rate": 0.055,
+  "accuracy": 0.917,
+  "precision": 0.333,
+  "recall": 0.333,
+  "confusion_matrix": [
+    [
+      43,
+      2
+    ],
+    [
+      2,
+      1
+    ]
+  ],
+  "note": "回测基于数值预报存档能见度，非人工目击记录；上线后用 P2 众包打卡交叉校准"
+}

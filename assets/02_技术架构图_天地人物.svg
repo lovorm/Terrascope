@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" font-family="'Sarasa Mono SC','PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdfbf7"/>
+      <stop offset="1" stop-color="#f5f0e8"/>
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef4f9"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8aa4bd"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- 标题 -->
+  <text x="600" y="54" text-anchor="middle" font-size="30" font-weight="bold" fill="#16324f">「见山Terrascope」技术架构 · 天-地-人-物 四源融合感知</text>
+  <text x="600" y="84" text-anchor="middle" font-size="15" fill="#5a6b7d">多源数据融合的乡村文旅数字底座 ｜ 纯云端可独立完整落地 ｜ 自建硬件 = 增量拓展</text>
+
+  <!-- 感知层标签 -->
+  <text x="40" y="122" font-size="16" font-weight="bold" fill="#16324f">感知层 · 四源融合（全部免费公开数据，来源·时间·频率可溯源）</text>
+  <text x="1160" y="122" text-anchor="end" font-size="12" fill="#8a8378">数据接入清单见申报书附表</text>
+
+  <!-- ══ 卡片1 天 ══ -->
+  <rect x="40" y="132" width="250" height="210" rx="14" fill="#ffffff" stroke="#1e3a5f" stroke-width="1.6"/>
+  <path d="M40 146 a14 14 0 0 1 14 -14 h222 a14 14 0 0 1 14 14 v26 h-250 z" fill="#1e3a5f"/>
+  <text x="165" y="161" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">天 · 卫星与气象</text>
+  <text x="165" y="188" text-anchor="middle" font-size="11" fill="#1e3a5f">Sky · 免费无密钥 / 免费订阅</text>
+  <text x="54" y="214" font-size="13" fill="#333">● Open-Meteo 历史气象</text>
+  <text x="54" y="240" font-size="13" fill="#333">● 和风天气 实时+预报+能见度</text>
+  <text x="54" y="266" font-size="13" fill="#333">● Sentinel-2 / Landsat 遥感</text>
+  <text x="66" y="290" font-size="12" fill="#666">NDSI冰川指数 · NDWI水域指数</text>
+  <text x="54" y="316" font-size="13" fill="#333">● SRTM 30m DEM 高程剖面</text>
+
+  <!-- ══ 卡片2 地 ══ -->
+  <rect x="330" y="132" width="250" height="210" rx="14" fill="#ffffff" stroke="#3a6b4d" stroke-width="1.6"/>
+  <path d="M330 146 a14 14 0 0 1 14 -14 h222 a14 14 0 0 1 14 14 v26 h-250 z" fill="#3a6b4d"/>
+  <text x="455" y="161" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">地 · 环境与权威</text>
+  <text x="455" y="188" text-anchor="middle" font-size="11" fill="#3a6b4d">Earth · 官方公开平台</text>
+  <text x="344" y="214" font-size="13" fill="#333">● 生态环境部 AQI / PM2.5</text>
+  <text x="344" y="240" font-size="13" fill="#333">● 中科院玉龙雪山冰川站</text>
+  <text x="344" y="266" font-size="13" fill="#333">● 拉市海湿地公开年报</text>
+  <text x="344" y="292" font-size="13" fill="#333">● 越冬水鸟统计数据库</text>
+  <text x="344" y="318" font-size="13" fill="#333">● 丽江统计公报 / 文旅数据</text>
+
+  <!-- ══ 卡片3 人 ══ -->
+  <rect x="620" y="132" width="250" height="210" rx="14" fill="#ffffff" stroke="#c19a4b" stroke-width="1.6"/>
+  <path d="M620 146 a14 14 0 0 1 14 -14 h222 a14 14 0 0 1 14 14 v26 h-250 z" fill="#c19a4b"/>
+  <text x="745" y="161" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">人 · 在地与众包</text>
+  <text x="745" y="188" text-anchor="middle" font-size="11" fill="#c19a4b">People · 走访实证 / 匿名打卡</text>
+  <text x="634" y="214" font-size="13" fill="#333">● 18 家民宿走访 · 12 份访谈</text>
+  <text x="634" y="240" font-size="13" fill="#333">● 匿名游客众包打卡</text>
+  <text x="634" y="266" font-size="13" fill="#333">● 民宿生态名片分享</text>
+  <text x="634" y="292" font-size="13" fill="#333">● 交叉验证观山指数</text>
+  <text x="634" y="318" font-size="13" fill="#333">● 纳西文化顾问机制</text>
+
+  <!-- ══ 卡片4 物（增量拓展） ══ -->
+  <rect x="910" y="132" width="250" height="210" rx="14" fill="#ffffff" stroke="#d97744" stroke-width="1.6" stroke-dasharray="7,4"/>
+  <path d="M910 146 a14 14 0 0 1 14 -14 h222 a14 14 0 0 1 14 14 v26 h-250 z" fill="#d97744"/>
+  <text x="1035" y="161" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">物 · 自建设备</text>
+  <text x="1035" y="188" text-anchor="middle" font-size="11" fill="#d97744">Thing · 增量拓展 非核心依赖</text>
+  <text x="924" y="214" font-size="13" fill="#333">● ESP32 + 低成本传感器</text>
+  <text x="924" y="240" font-size="13" fill="#333">● 预留接入协议 · 设备ID · OTA</text>
+  <text x="924" y="266" font-size="13" fill="#333">● 云端零修改即插即用</text>
+  <text x="924" y="292" font-size="13" fill="#333">● 实地部署后自动并网</text>
+  <text x="924" y="318" font-size="12" fill="#d97744">※ 后续增量拓展，不阻塞当前落地</text>
+
+  <!-- 汇聚箭头 -->
+  <line x1="165" y1="342" x2="165" y2="368" stroke="#8aa4bd" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="455" y1="342" x2="455" y2="368" stroke="#8aa4bd" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="745" y1="342" x2="745" y2="368" stroke="#8aa4bd" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1035" y1="342" x2="1035" y2="368" stroke="#8aa4bd" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="6,4"/>
+
+  <!-- ══ 云端数字底座 ══ -->
+  <rect x="40" y="372" width="1120" height="212" rx="16" fill="url(#cloudGrad)" stroke="#1e3a5f" stroke-width="2"/>
+  <rect x="470" y="384" width="260" height="26" rx="13" fill="#1e3a5f"/>
+  <text x="600" y="402" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">云端数字底座</text>
+
+  <!-- 数据层 -->
+  <rect x="64" y="418" width="92" height="34" rx="8" fill="#3a6b4d"/>
+  <text x="110" y="440" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">数据层</text>
+  <text x="172" y="440" font-size="13.5" fill="#333">定时抓取管道（GitHub Actions）· PostgreSQL 时序库 · 数据缓存降频防超限 · 全量溯源标注</text>
+
+  <!-- 服务层 -->
+  <rect x="64" y="470" width="92" height="34" rx="8" fill="#1e3a5f"/>
+  <text x="110" y="492" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">服务层</text>
+  <text x="172" y="492" font-size="13.5" fill="#333">FastAPI 统一 API · 接口文档 · 日志监控 · CI/CD（P2 工程化）· 预留 ESP32 设备接入协议</text>
+
+  <!-- 应用层 -->
+  <rect x="64" y="522" width="92" height="34" rx="8" fill="#c19a4b"/>
+  <text x="110" y="544" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">应用层</text>
+  <text x="172" y="544" font-size="13.5" fill="#333">ECharts Web 看板 · 信息展示类微信小程序 · 生态名片生成器 · 东巴文每日一词 · GeoJSON 路线</text>
+
+  <line x1="600" y1="584" x2="600" y2="612" stroke="#8aa4bd" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ══ 数据应用输出 ══ -->
+  <text x="40" y="632" font-size="16" font-weight="bold" fill="#16324f">数据应用输出</text>
+  <rect x="40" y="644" width="250" height="42" rx="21" fill="#ffffff" stroke="#1e3a5f" stroke-width="1.4"/>
+  <text x="165" y="670" text-anchor="middle" font-size="13.5" fill="#16324f">观山指数预测 · 回测准确率</text>
+  <rect x="330" y="644" width="250" height="42" rx="21" fill="#ffffff" stroke="#3a6b4d" stroke-width="1.4"/>
+  <text x="455" y="670" text-anchor="middle" font-size="13.5" fill="#24523a">冰川退缩 · 水域面积时序</text>
+  <rect x="620" y="644" width="250" height="42" rx="21" fill="#ffffff" stroke="#c19a4b" stroke-width="1.4"/>
+  <text x="745" y="670" text-anchor="middle" font-size="13.5" fill="#8a6a2f">DEM 海拔剖面电子路线</text>
+  <rect x="910" y="644" width="250" height="42" rx="21" fill="#ffffff" stroke="#d97744" stroke-width="1.4"/>
+  <text x="1035" y="670" text-anchor="middle" font-size="13.5" fill="#a85a2e">异常告警 · 政府看板原型</text>
+
+  <!-- ══ 底部合规条 ══ -->
+  <rect x="40" y="712" width="1120" height="58" rx="12" fill="#1e3a5f"/>
+  <text x="600" y="736" text-anchor="middle" font-size="13.5" fill="#ffffff">数据合规：所有数据标注来源 · 更新时间 · 更新频率，全程可溯源 ｜ 年成本 ≤ 300 元（学生服务器+域名，数据源全免费）</text>
+  <text x="600" y="758" text-anchor="middle" font-size="13" fill="#cfe0ef">P0 基础上线(1—2月) → P1 观山指数·卫星遥感·小程序(2—4月) → P2 众包打卡·异常告警·工程化(4—6月)</text>
+</svg>

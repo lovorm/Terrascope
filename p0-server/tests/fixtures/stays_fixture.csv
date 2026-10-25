@@ -1,0 +1,5 @@
+stay_id,village,stay_name,rooms_total,price_band,eco_features,culture_features,source,collected_at,updated_freq,consent,contact_ref,notes
+YQ-LSH-001,拉市海畔,测试民宿甲,6,150-300,太阳能热水,东巴文门楣,实地调研,2026-09-20,学期更新,书面同意,AUTH-2026-001,fixture
+YQ-BS-002,白沙古镇,测试民宿乙,4,<150,,,业主自报,2026-09-19,月更新,未联系,,fixture
+YQ-LSH-003,拉市海畔,测试民宿丙,5,300-500,,,实地调研,2026-09-20,学期更新,口头同意,13812345678,fixture
+YQ-XX-004,其他村,测试民宿丁,3,,,,网购,2026-09-20,学期更新,书面同意,,fixture
