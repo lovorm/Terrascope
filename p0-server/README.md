@@ -29,6 +29,8 @@ python -c "from app.p1 import mountain_model; print(mountain_model.train(days=92
 - **特征**：白天云量均值 / 全天累计降水 / 白天湿度均值 / 白天最大风速（预报同样可得，线上线下同口径）
 - **评估**：walk-forward TimeSeriesSplit(5) 池化样本外指标，混淆矩阵如实写入
   `data/model/mountain_index_meta.json` 并经 `/api/dashboard/mountain-index` 的 `model_meta` 对外公布
+- **模型产物（joblib + meta）不入版本库**：克隆后接口走 `rule-v0` 规则版兜底属预期行为；
+  部署后执行上方 train 命令生成模型文件，接口自动切换 `lr-v1`
 - **实测记录（2026-09-19，雨季窗口）**：72 有效天 / 正值率 5.6% / 样本外 48 天：
   accuracy 0.917、precision 0.333、recall 0.333——样本小且季节偏斜，P2 上线众包打卡后用
   游客真实目击校准阈值与标签，不对外夸大指标
@@ -42,6 +44,9 @@ python -m app.ingest          # 真实抓取丽江两坐标（玉龙雪山/拉�
 uvicorn app.main:app --reload # 启动 API，文档 http://127.0.0.1:8000/docs
 pytest tests/ -v              # 冒烟测试（含真实 Open-Meteo 调用）
 ```
+
+> 模型产物（joblib + meta）不入库：克隆后接口先走 `rule-v0` 规则版兜底；
+> 部署后执行 P1 train 命令生成模型文件，接口自动切换 `lr-v1`。
 
 ## 核心接口
 
