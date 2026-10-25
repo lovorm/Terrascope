@@ -20,10 +20,15 @@ def fetch_now(timeout=15):
     d = r.json()
     if d.get("code") != "200":
         return None, f"和风接口返回 code={d.get('code')}"
-    now = d["now"]
-    ts = d["updateTime"][:16].replace("T", " ") + ":00"
+    out = _parse_now(d["now"])
+    return out, "ok"
+
+
+def _parse_now(now: dict) -> list:
+    """解析和风 v7 now 字段；vis 原始单位 km，入库前转换为 m。"""
     unit_map = [("temperature_c", "temp", "°C"), ("humidity_pct", "humidity", "%"),
                 ("visibility_m", "vis", "m"), ("pressure_hpa", "pressure", "hPa")]
-    out = [{"metric": m, "ts": ts, "value": float(now[k]), "unit": u}
-           for m, k, u in unit_map if now.get(k) not in (None, "")]
-    return out, "ok"
+    return [{"metric": m, "ts": now["obsTime"][:16].replace("T", " ") + ":00",
+             "value": float(now[k]) * 1000 if m == "visibility_m" else float(now[k]),
+             "unit": u}
+            for m, k, u in unit_map if now.get(k) not in (None, "")]
