@@ -12,6 +12,7 @@ from ..config import ADMIN_TOKEN, DEVICE_KEY_HEADER
 from ..db import get_db
 from ..models import Device, DeviceObservation, IngestLog, Observation, Source, Stay, utcnow
 from ..p1 import mountain_model
+from ..p1.aggregation import aggregate_daily_observations
 from ..schemas import DeviceObsIn, DeviceRegisterIn
 from ..services import open_meteo as open_meteo_svc
 
@@ -36,26 +37,8 @@ def mountain_index(db: Session = Depends(get_db)):
         note = ("最近 7 天无观测数据，已回退使用全表最近记录；"
                 "请检查采集管道是否停跑")
 
-    # 与训练同口径聚合：云/湿/风取白天（08-18时），降水全天累计
-    feats = {}
-    for o in rows:
-        d, hh = o.ts.strftime("%Y-%m-%d"), o.ts.hour
-        daytime = 8 <= hh <= 18
-        f = feats.setdefault(d, {"cloud_mean": [], "precip_sum": 0.0,
-                                 "humidity_mean": [], "wind_max": 0.0})
-        if o.metric == "precipitation_mm":
-            f["precip_sum"] += o.value
-        elif daytime and o.metric == "cloud_cover_pct":
-            f["cloud_mean"].append(o.value)
-        elif daytime and o.metric == "humidity_pct":
-            f["humidity_mean"].append(o.value)
-        elif daytime and o.metric == "wind_kmh":
-            f["wind_max"] = max(f["wind_max"], o.value)
-    clean = {d: {"cloud_mean": sum(f["cloud_mean"]) / len(f["cloud_mean"]),
-                 "precip_sum": round(f["precip_sum"], 2),
-                 "humidity_mean": sum(f["humidity_mean"]) / len(f["humidity_mean"]) if f["humidity_mean"] else 50.0,
-                 "wind_max": f["wind_max"]}
-             for d, f in feats.items() if f["cloud_mean"]}
+    # 与训练同口径聚合：降水全天累计，其余指标取白天（08-18时）
+    clean = aggregate_daily_observations((o.ts, o.metric, o.value) for o in rows)
 
     source = {"key": "open-meteo", "provider": "Open-Meteo（免费无密钥）",
               "update_freq": "逐时", "homepage": "https://open-meteo.com"}

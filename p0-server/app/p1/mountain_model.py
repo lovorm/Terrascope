@@ -13,13 +13,14 @@
 - 评估：测试集准确率 / 精确率 / 召回率 / 混淆矩阵，如实写入元数据并对外公布，不夸大。
 """
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import joblib
 
 from ..config import SITES
 from ..services import open_meteo
+from .aggregation import aggregate_daily_observations
 
 MODEL_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "model"
 MODEL_PATH = MODEL_DIR / "mountain_index_lr.joblib"
@@ -29,41 +30,19 @@ VERSION = "lr-v1"
 FEATURES = ["cloud_mean", "precip_sum", "humidity_mean", "wind_max"]
 
 
-def _daytime(h: int) -> bool:
-    return 8 <= h <= 18
-
-
 def daily_features(hourly: dict) -> dict:
     """逐时数据 → {date: {features}}，训练与线上预测共用同一聚合口径。"""
-    days = {}
+    observations = []
     for i, t in enumerate(hourly["time"]):
-        d, h = t[:10], int(t[11:13])
-        if not _daytime(h):
-            continue
-        f = days.setdefault(d, {"cloud": [], "hum": [], "wind": [], "vis": [], "precip_sum": 0.0})
-        if hourly["cloud_cover"][i] is not None:
-            f["cloud"].append(hourly["cloud_cover"][i])
-        if hourly["relative_humidity_2m"][i] is not None:
-            f["hum"].append(hourly["relative_humidity_2m"][i])
-        if hourly["wind_speed_10m"][i] is not None:
-            f["wind"].append(hourly["wind_speed_10m"][i])
-        if hourly.get("visibility", [None] * len(hourly["time"]))[i] is not None:
-            f["vis"].append(hourly["visibility"][i])
-        if hourly["precipitation"][i] is not None:
-            f["precip_sum"] += hourly["precipitation"][i]
-    out = {}
-    for d, f in days.items():
-        if not f["cloud"]:
-            continue  # 白天无数据则弃
-        out[d] = {
-            "cloud_mean": sum(f["cloud"]) / len(f["cloud"]),
-            "precip_sum": round(f["precip_sum"], 2),
-            "humidity_mean": sum(f["hum"]) / len(f["hum"]) if f["hum"] else 50.0,
-            "wind_max": max(f["wind"]) if f["wind"] else 0.0,
-            # 白天有效能见度小时数不足 5 视为无标签日（数据缺失而非坏天气）
-            "vis_median": sorted(f["vis"])[len(f["vis"]) // 2] if len(f["vis"]) >= 5 else None,
-        }
-    return out
+        for metric, key in (("cloud_cover_pct", "cloud_cover"),
+                            ("humidity_pct", "relative_humidity_2m"),
+                            ("wind_kmh", "wind_speed_10m"),
+                            ("visibility_m", "visibility"),
+                            ("precipitation_mm", "precipitation")):
+            value = hourly.get(key, [None] * len(hourly["time"]))[i]
+            if value is not None:
+                observations.append((datetime.fromisoformat(t), metric, float(value)))
+    return aggregate_daily_observations(observations)
 
 
 def fetch_history(site: dict, days: int) -> dict:
