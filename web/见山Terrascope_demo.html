@@ -296,7 +296,10 @@
         <div class="flex items-start gap-4 mb-4">
           <div class="text-5xl">🏔️</div>
           <div>
-            <h3 class="text-2xl font-bold mb-1" style="color:var(--naxi-blue);">玉龙雪山 · 高山冰川</h3>
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h3 class="text-2xl font-bold" style="color:var(--naxi-blue);">玉龙雪山 · 高山冰川</h3>
+              <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+            </div>
             <p class="text-sm text-gray-600">海拔 5596m · 横断山脉最南端雪山</p>
           </div>
         </div>
@@ -324,7 +327,10 @@
         <div class="flex items-start gap-4 mb-4">
           <div class="text-5xl">🦢</div>
           <div>
-            <h3 class="text-2xl font-bold mb-1" style="color:var(--lashi-green);">拉市海 · 高原湿地</h3>
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h3 class="text-2xl font-bold" style="color:var(--lashi-green);">拉市海 · 高原湿地</h3>
+              <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+            </div>
             <p class="text-sm text-gray-600">海拔 2440m · 国际重要湿地 · 候鸟迁徙驿站</p>
           </div>
         </div>
@@ -396,7 +402,7 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-bold text-lg">玉龙雪山观山指数 · 过去 30 日</h3>
-        <span class="text-xs text-gray-500"><span class="pulse-dot"></span> 演示版 · 公开历史摘要</span>
+        <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
       </div>
       <div id="chart-snow" style="height:320px;"></div>
       <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
@@ -408,7 +414,7 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-bold text-lg">冰川与水域时序动态 · 卫星遥感（相对指数）</h3>
-        <span class="text-xs text-gray-500"><span class="pulse-dot"></span> 演示版 · 相对指数 1990=100</span>
+        <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
       </div>
       <div id="chart-remote" style="height:320px;"></div>
       <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
@@ -419,14 +425,20 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
       <div class="bg-white rounded-2xl shadow-sm p-6">
-        <h3 class="font-bold text-lg mb-4">拉市海候鸟迁徙指数 · 月度趋势</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-lg">拉市海候鸟迁徙指数 · 月度趋势</h3>
+          <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+        </div>
         <div id="chart-bird" style="height:280px;"></div>
         <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
           来源：<span class="tag-src">保护区公开越冬水鸟统计</span> 更新频率：季 · 带溯源候鸟数据库（P1 上线）
         </div>
       </div>
       <div class="bg-white rounded-2xl shadow-sm p-6">
-        <h3 class="font-bold text-lg mb-4">湿地水质关键指标 · 年度对比</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-lg">湿地水质关键指标 · 年度对比</h3>
+          <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+        </div>
         <div id="chart-water" style="height:280px;"></div>
         <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
           来源：<span class="tag-src">拉市海湿地公开年报</span> <span class="tag-src">生态环境部公开监测</span> 更新频率：年 · 引用公开摘要，以原始发布为准
@@ -434,8 +446,20 @@
       </div>
     </div>
 
+    <div id="latestObsCard" class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="font-bold text-lg">近 48 小时温度与湿度</h3>
+        <span id="latestObsBadge" class="text-xs text-gray-500"><span class="skeleton-badge"></span></span>
+      </div>
+      <div id="chart-latest-obs" style="height:320px;"></div>
+      <div id="latestObsFootnote" class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500"></div>
+    </div>
+
     <div class="bg-white rounded-2xl shadow-sm p-6">
-      <h3 class="font-bold text-lg mb-4">民宿端实时生态数据 · 示意</h3>
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg">民宿端实时生态数据 · 示意</h3>
+        <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center">
           <div class="text-xs text-gray-500 mb-1">空气 PM2.5</div>
@@ -541,7 +565,10 @@
 
       <!-- 生态名片生成器 -->
       <div class="bg-[var(--snow-mountain)] rounded-2xl p-8 shadow-md">
-        <h3 class="text-xl font-bold mb-1" style="color:var(--naxi-blue);">云端生态名片生成器</h3>
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <h3 class="text-xl font-bold" style="color:var(--naxi-blue);">云端生态名片生成器</h3>
+          <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">演示示意数据</span>
+        </div>
         <p class="text-xs text-gray-500 mb-5">自动渲染民宿专属实时生态数据卡片 · P1 支持一键导出分享图</p>
         <div class="flex flex-wrap gap-3 mb-5">
           <select id="ecoPick" class="flex-1 min-w-[120px] px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm"></select>
@@ -1242,6 +1269,68 @@ const API_BASE = window.YUNQI_API || 'http://127.0.0.1:8000';
   } catch (e) { renderDemo(); }
   grid.setAttribute('aria-busy', 'false');
   card.setAttribute('aria-live', 'polite');
+})();
+</script>
+<script>
+// 近 48 小时温度与湿度：底座 API 双轨接入（UTC 入库，前端转 Asia/Shanghai 展示）
+(async () => {
+  const badge = document.getElementById('latestObsBadge');
+  const footnote = document.getElementById('latestObsFootnote');
+  const chart = echarts.init(document.getElementById('chart-latest-obs'), null, { renderer: 'canvas' });
+  const hours = Array.from({length: 48}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+  const option = (labels, temperatures, humidities, lastTs) => ({
+    textStyle: { fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' },
+    tooltip: { trigger: 'axis' },
+    legend: { bottom: 0, textStyle: { fontSize: 12 } },
+    grid: { left: 45, right: 45, top: 35, bottom: 50 },
+    xAxis: { type: 'category', data: labels, axisLine: { lineStyle: { color: '#ccc' } } },
+    yAxis: [
+      { type: 'value', name: '温度 °C', splitLine: { lineStyle: { type: 'dashed', color: '#eee' } } },
+      { type: 'value', name: '湿度 %', max: 100, splitLine: { show: false } },
+    ],
+    series: [
+      { name: '温度', type: 'line', smooth: true, data: temperatures, itemStyle: { color: '#d97744' }, lineStyle: { width: 3 } },
+      { name: '湿度', type: 'line', smooth: true, yAxisIndex: 1, data: humidities, itemStyle: { color: '#1e3a5f' }, lineStyle: { width: 3 } },
+    ],
+  });
+  const renderDemo = () => {
+    chart.setOption(option(hours,
+      Array.from({length: 48}, (_, i) => 8 + 7 * Math.sin((i - 6) * Math.PI / 24)),
+      Array.from({length: 48}, (_, i) => 55 + 20 * Math.sin((i + 4) * Math.PI / 24))));
+    badge.innerHTML = '<span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600">演示示意数据</span>';
+    footnote.textContent = '接通底座 API 后此处为实时观测曲线（UTC 入库，前端转 Asia/Shanghai 展示）';
+  };
+  const renderLive = (temperatures, humidities) => {
+    const labels = temperatures.map(row => new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(new Date(row.ts)));
+    const lastTs = new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(new Date(temperatures[temperatures.length - 1].ts));
+    chart.setOption(option(labels, temperatures.map(row => row.value), humidities.map(row => row.value), lastTs));
+    badge.innerHTML = `<span class="px-2 py-1 rounded-full bg-green-100 text-green-800"><span class="pulse-dot"></span> 实时 · 数据时间 ${lastTs}</span>`;
+    footnote.textContent = '数据以 UTC 入库，前端统一转换为 Asia/Shanghai（京八区）展示';
+  };
+  const fetchLatest = metric => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    return fetch(`${API_BASE}/api/dashboard/latest?metric=${metric}&limit=48`, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .finally(() => clearTimeout(timer));
+  };
+  try {
+    const [temperatures, humidities] = await Promise.all([
+      fetchLatest('temperature_c'), fetchLatest('humidity_pct'),
+    ]);
+    if (!Array.isArray(temperatures) || !Array.isArray(humidities) ||
+        !temperatures.length || !humidities.length) throw new Error('empty data');
+    renderLive(temperatures.slice().reverse(), humidities.slice().reverse());
+  } catch (e) { renderDemo(); }
+  window.addEventListener('resize', () => chart.resize());
 })();
 </script>
 </body>
