@@ -1,0 +1,119 @@
+name: Ingest
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: terrascope-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TERRASCOPE_SERVER_URL: ${{ secrets.TERRASCOPE_SERVER_URL }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - name: 缺省守卫
+        if: ${{ env.TERRASCOPE_SERVER_URL == '' || env.ADMIN_TOKEN == '' }}
+        run: |
+          echo "secrets 未配置，跳过（配置方法见 p0-server/README.md 运维节）"
+          exit 0
+
+      - name: 触发采集
+        if: ${{ env.TERRASCOPE_SERVER_URL != '' && env.ADMIN_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          response_file=$(mktemp)
+          http_code=$(curl --max-time 60 -sS -f -o "$response_file" \
+            -w '%{http_code}' -X POST "$TERRASCOPE_SERVER_URL/api/admin/ingest" \
+            -H "X-Admin-Token: $ADMIN_TOKEN")
+          echo "HTTP $http_code"
+          cat "$response_file"
+          echo
+          python3 - "$response_file" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json
+          import sys
+
+          response_file, summary_path = sys.argv[1], sys.argv[2]
+          with open(response_file, encoding="utf-8") as f:
+              response = json.load(f)
+
+          results = response.get("results")
+          if not isinstance(results, list):
+              raise SystemExit("响应缺少 results 数组，或格式不符")
+
+          run_at = response.get("run_at", "未知")
+          lines = ["### Terrascope 定时采集", "", f"- run_at: {run_at}"]
+          errors = []
+          for result in results:
+              if not isinstance(result, dict):
+                  lines.append("- 未知源: rows=0, error=响应格式错误")
+                  errors.append(result)
+                  continue
+              source = result.get("source", "未知源")
+              rows = result.get("rows", 0)
+              if "error" in result:
+                  status = f"error={result['error']}"
+                  errors.append(result)
+              elif "skipped" in result:
+                  status = f"skipped={result['skipped']}"
+              elif "note" in result:
+                  status = f"note={result['note']}"
+              else:
+                  status = "ok"
+              lines.append(f"- {source}: rows={rows}, {status}")
+
+          with open(summary_path, "a", encoding="utf-8") as summary_file:
+              summary_file.write("\n".join(lines) + "\n")
+
+          if errors:
+              print("以下数据源采集失败：")
+              print(json.dumps(errors, ensure_ascii=False, indent=2))
+              raise SystemExit("存在采集失败的数据源")
+          PY
+
+      - name: 新鲜度检查
+        if: ${{ env.TERRASCOPE_SERVER_URL != '' && env.ADMIN_TOKEN != '' }}
+        env:
+          MAX_AGE_HOURS: "25"
+        run: |
+          set -euo pipefail
+          response_file=$(mktemp)
+          curl --max-time 60 -sS -f "$TERRASCOPE_SERVER_URL/api/sources" -o "$response_file"
+          python3 - "$response_file" "$MAX_AGE_HOURS" <<'PY'
+          import json
+          import sys
+          from datetime import datetime, timedelta, timezone
+
+          response_file, max_age_hours = sys.argv[1], float(sys.argv[2])
+          with open(response_file, encoding="utf-8") as f:
+              sources = json.load(f)
+          if not isinstance(sources, list):
+              raise SystemExit("/api/sources 响应不是数组")
+
+          by_key = {s.get("key"): s for s in sources if isinstance(s, dict)}
+          target = by_key.get("open-meteo")
+          if target is None:
+              raise SystemExit("open-meteo 源未注册")
+
+          last_data_at = target.get("last_data_at")
+          if not last_data_at:
+              raise SystemExit("open-meteo 源 last_data_at 为空")
+
+          last_time = datetime.fromisoformat(last_data_at.replace("Z", "+00:00"))
+          if last_time.tzinfo is None:
+              last_time = last_time.replace(tzinfo=timezone.utc)
+          max_age = timedelta(hours=max_age_hours)
+          age = datetime.now(timezone.utc) - last_time
+          if age > max_age:
+              raise SystemExit(f"open-meteo 数据过期：age={age}，max_age={max_age}")
+
+          print(f"open-meteo 数据新鲜度通过：last_data_at={last_data_at}，age={age}")
+          for key in ("qweather", "cnemc-air"):
+              info = by_key.get(key, {})
+              print(f"{key}: pipeline_ready={info.get('pipeline_ready')}，rows={info.get('rows')}，last_data_at={info.get('last_data_at')}")
+          PY
