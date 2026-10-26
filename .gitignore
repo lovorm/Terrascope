@@ -20,3 +20,8 @@ Thumbs.db
 
 # 工作区工具
 .workbuddy/
+
+# 内部提示词/任务书：一律不进版本库
+提示词_*.md
+*提示词*.md
+*.prompt.md
