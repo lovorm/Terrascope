@@ -1,0 +1,94 @@
+name: Retrain
+
+on:
+  schedule:
+    - cron: "30 22 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: terrascope-retrain
+  cancel-in-progress: false
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TERRASCOPE_SERVER_URL: ${{ secrets.TERRASCOPE_SERVER_URL }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - name: 缺省守卫
+        if: ${{ env.TERRASCOPE_SERVER_URL == '' || env.ADMIN_TOKEN == '' }}
+        run: |
+          echo "secrets 未配置，跳过（配置方法见 p0-server/README.md 运维节）"
+          exit 0
+
+      - name: 触发重训
+        if: ${{ env.TERRASCOPE_SERVER_URL != '' && env.ADMIN_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          response_file=$(mktemp)
+          http_code=$(curl --max-time 300 -sS -f -o "$response_file" \
+            -w '%{http_code}' -X POST \
+            "$TERRASCOPE_SERVER_URL/api/admin/train-mountain-index?days=92&threshold_m=15000" \
+            -H "X-Admin-Token: $ADMIN_TOKEN")
+          echo "HTTP $http_code"
+          cat "$response_file"
+          echo
+          python3 - "$response_file" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json
+          import sys
+
+          response_file, summary_path = sys.argv[1], sys.argv[2]
+          with open(response_file, encoding="utf-8") as f:
+              report = json.load(f)
+
+          if "version" not in report or "error" in report:
+              raise SystemExit("训练响应缺少 version 或包含 error")
+
+          keys = [
+              "version",
+              "trained_at",
+              "site",
+              "n_days",
+              "window",
+              "evaluation",
+              "label_rule",
+              "threshold_m",
+              "features",
+              "data_source",
+              "sample_note",
+              "n_oos",
+              "positive_rate",
+              "accuracy",
+              "precision",
+              "recall",
+              "confusion_matrix",
+              "note",
+          ]
+          lines = ["### Terrascope 观山指数周度重训", ""]
+          for key in keys:
+              lines.append(f"- {key}: {report.get(key)}")
+
+          with open(summary_path, "a", encoding="utf-8") as summary_file:
+              summary_file.write("\n".join(lines) + "\n")
+          PY
+
+      - name: 生效自检
+        if: ${{ env.TERRASCOPE_SERVER_URL != '' && env.ADMIN_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          response_file=$(mktemp)
+          curl --max-time 60 -sS -f "$TERRASCOPE_SERVER_URL/api/dashboard/mountain-index" -o "$response_file"
+          python3 - "$response_file" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as f:
+              response = json.load(f)
+
+          version = response.get("version")
+          if version != "lr-v1":
+              raise SystemExit(f"模型未生效：version={version}")
+          print(f"模型生效自检通过：version={version}")
+          PY
