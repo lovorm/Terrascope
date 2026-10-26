@@ -10,7 +10,7 @@ venv/
 *.db
 *.sqlite3
 *.joblib
-data/model/
+p0-server/data/model/
 
 # IDE / 系统
 .idea/
