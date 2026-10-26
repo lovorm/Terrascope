@@ -52,6 +52,9 @@
   .tag-src{background:rgba(30,58,95,.08);color:var(--naxi-blue);padding:2px 8px;border-radius:10px;font-size:.72em;display:inline-block;margin:2px;}
   .pulse-dot{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+  .skeleton-badge{display:inline-block;width:150px;height:22px;border-radius:999px;background:#e5e7eb;animation:pulse 1.5s ease-in-out infinite;}
+  .skeleton-card{height:132px;border-radius:1rem;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 37%,#f1f5f9 63%);background-size:400% 100%;animation:skeleton-slide 1.4s ease infinite;}
+  @keyframes skeleton-slide{0%{background-position:100% 50%;}100%{background-position:0 50%;}}
   footer{background:var(--naxi-blue);}
   /* ===== 质感增强 ===== */
   /* 滚动进场 */
@@ -374,6 +377,21 @@
       全部图表基于 <b>9 类免费公开数据源</b>生成，每张图标注<b>来源 · 更新时间 · 更新频率</b>，全程可溯源。
       当前为基于公开历史数据的演示版；P0 阶段（1—2 个月）接入实时 API，P1 阶段上线观山指数预测与卫星遥感全流程。
     </p>
+
+    <div id="mountainIndexCard" class="bg-white rounded-2xl shadow-sm p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <h3 class="font-bold text-lg">观山指数 · 未来 3 天</h3>
+        <span id="mountainIndexBadge" class="inline-flex items-center gap-2 text-xs text-gray-500">
+          <span class="skeleton-badge"></span>
+        </span>
+      </div>
+      <div id="mountainIndexGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-busy="true">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+      <div id="mountainIndexFootnote" class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500"></div>
+    </div>
 
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-8">
       <div class="flex items-center justify-between mb-4">
@@ -1149,11 +1167,12 @@ document.querySelectorAll('[data-count]').forEach(el => {
 });
 </script>
 <script>
+const API_BASE = window.YUNQI_API || 'http://127.0.0.1:8000';
+
 // 人源·民宿名录：底座 API 实时接入（仅已授权记录、脱敏字段；API 不可达时静默保留静态演示卡）
 (async () => {
-  const base = window.YUNQI_API || 'http://127.0.0.1:8000';
   try {
-    const r = await fetch(base + '/api/stays');
+    const r = await fetch(API_BASE + '/api/stays');
     if (!r.ok) return;
     const rows = await r.json();
     if (!Array.isArray(rows) || !rows.length) return;
@@ -1172,6 +1191,57 @@ document.querySelectorAll('[data-count]').forEach(el => {
         <div class="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">来源：${s.source} · 采集：${s.collected_at} · 更新：${s.updated_freq}</div>
       </div>`).join('');
   } catch (e) { /* API 不可达：保留静态演示卡 */ }
+})();
+</script>
+<script>
+// 观山指数：底座 API 双轨接入（3 秒超时；失败回退演示示意数据）
+(async () => {
+  const card = document.getElementById('mountainIndexCard');
+  const grid = document.getElementById('mountainIndexGrid');
+  const badge = document.getElementById('mountainIndexBadge');
+  const footnote = document.getElementById('mountainIndexFootnote');
+  const level = index => index >= 75 ? '适合观山' : index >= 50 ? '较适合观山' : index >= 25 ? '一般' : '不适合观山';
+  const renderDemo = () => {
+    const items = [
+      {date: '示例日 1', index: 82},
+      {date: '示例日 2', index: 68},
+      {date: '示例日 3', index: 74},
+    ];
+    grid.innerHTML = items.map(item => `
+      <div class="snow-card rounded-xl p-5">
+        <div class="text-xs text-gray-500 mb-2">${item.date}</div>
+        <div class="text-4xl font-bold text-[var(--naxi-blue)] mb-1">${item.index}</div>
+        <div class="text-sm text-gray-600">${level(item.index)}</div>
+      </div>`).join('');
+    badge.innerHTML = '<span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600">演示示意数据</span>';
+    footnote.textContent = '接通底座 API 后此处为模型实时输出';
+  };
+  const renderLive = data => {
+    const items = data.items || [];
+    if (!items.length) return renderDemo();
+    grid.innerHTML = items.map(item => `
+      <div class="snow-card rounded-xl p-5">
+        <div class="text-xs text-gray-500 mb-2">${item.date}</div>
+        <div class="text-4xl font-bold text-[var(--naxi-blue)] mb-1">${item.index}</div>
+        <div class="text-sm text-gray-600">${level(item.index)}</div>
+      </div>`).join('');
+    const meta = data.model_meta || {};
+    badge.innerHTML = `<span class="px-2 py-1 rounded-full bg-green-100 text-green-800"><span class="pulse-dot"></span> 实时 · 模型 ${data.version} · 训练于 ${meta.trained_at}</span>`;
+    const bits = [];
+    if (meta.accuracy !== undefined) bits.push(`accuracy ${meta.accuracy}`);
+    if (data.note) bits.push(data.note);
+    footnote.textContent = bits.join(' · ');
+  };
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const r = await fetch(API_BASE + '/api/dashboard/mountain-index', {signal: controller.signal});
+    clearTimeout(timer);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    renderLive(await r.json());
+  } catch (e) { renderDemo(); }
+  grid.setAttribute('aria-busy', 'false');
+  card.setAttribute('aria-live', 'polite');
 })();
 </script>
 </body>
