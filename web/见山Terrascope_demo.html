@@ -273,7 +273,7 @@
 
     <div id="apiStays" class="mt-8" style="display:none">
       <div class="flex items-center gap-2 mb-4">
-        <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">底座 API 实时返回</span>
+        <span id="apiStaysBadge" class="inline-flex items-center"></span>
         <span class="text-sm text-gray-500" id="apiStaysMeta"></span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="apiStaysGrid"></div>
@@ -1195,6 +1195,7 @@ document.querySelectorAll('[data-count]').forEach(el => {
 </script>
 <script>
 const API_BASE = window.YUNQI_API || 'http://127.0.0.1:8000';
+const parseUtc = ts => /[zZ+]|\d{2}:\d{2}:\d{2}[+-]/.test(ts) ? new Date(ts) : new Date(ts + 'Z');
 
 // 人源·民宿名录：底座 API 实时接入（仅已授权记录、脱敏字段；API 不可达时静默保留静态演示卡）
 (async () => {
@@ -1205,8 +1206,10 @@ const API_BASE = window.YUNQI_API || 'http://127.0.0.1:8000';
     if (!Array.isArray(rows) || !rows.length) return;
     const box = document.getElementById('apiStays');
     box.style.display = '';
+    document.getElementById('apiStaysBadge').innerHTML =
+      `<span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800"><span class="pulse-dot"></span> 实时 · 共 ${rows.length} 条已授权记录</span>`;
     document.getElementById('apiStaysMeta').textContent =
-      `共 ${rows.length} 条已授权记录 · 每条含 来源/采集时间/更新频率 三要素（敏感字段永不出接口）`;
+      `每条含 来源/采集时间/更新频率 三要素（敏感字段永不出接口）`;
     document.getElementById('apiStaysGrid').innerHTML = rows.map(s => `
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
         <div class="flex items-center justify-between mb-1">
@@ -1303,11 +1306,11 @@ const API_BASE = window.YUNQI_API || 'http://127.0.0.1:8000';
   const renderLive = (temperatures, humidities) => {
     const labels = temperatures.map(row => new Intl.DateTimeFormat('zh-CN', {
       timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
-    }).format(new Date(row.ts)));
+    }).format(parseUtc(row.ts)));
     const lastTs = new Intl.DateTimeFormat('zh-CN', {
       timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit', hour12: false,
-    }).format(new Date(temperatures[temperatures.length - 1].ts));
+    }).format(parseUtc(temperatures[temperatures.length - 1].ts));
     chart.setOption(option(labels, temperatures.map(row => row.value), humidities.map(row => row.value), lastTs));
     badge.innerHTML = `<span class="px-2 py-1 rounded-full bg-green-100 text-green-800"><span class="pulse-dot"></span> 实时 · 数据时间 ${lastTs}</span>`;
     footnote.textContent = '数据以 UTC 入库，前端统一转换为 Asia/Shanghai（京八区）展示';
