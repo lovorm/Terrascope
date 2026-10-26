@@ -77,6 +77,30 @@ curl -X POST http://127.0.0.1:8000/api/devices/esp32-001/observations \
 4. GitHub 仓库 Secrets 配置 `YUNQI_SERVER`（域名）与 `YUNQI_ADMIN_TOKEN`，`.github/workflows/ingest.yml` 每 2 小时自动采集；服务端降频二次兜底
 5. 域名备案后挂 Nginx + 免费证书，即得公开演示链接（P0 产出物）
 
+## 运维（Actions 定时任务）
+
+服务器侧部署由 `deploy/README.md` 负责（systemd、`.env`、健康检查）；本节只负责 GitHub Actions 侧的定时任务配置与告警。
+
+### Secrets 配置
+
+1. 打开仓库 **Settings → Secrets and variables → Actions**。
+2. 新增 `TERRASCOPE_SERVER_URL`：值为服务地址，如 `https://terrascope.example.com`（Nginx 反代后）或临时联调的 `http://<服务器IP>:8000`。
+3. 新增 `ADMIN_TOKEN`：必须与服务器 `.env` 中的 `ADMIN_TOKEN` 一致。
+4. Secrets 未配置时，两个 workflow 会打印「secrets 未配置，跳过」并正常退出，不会产生每小时红屏邮件。
+
+### 手动验证
+
+1. 打开仓库 **Actions** 页面。
+2. 左侧选中 **Ingest**，点击 **Run workflow** 手动触发，确认任务绿色通过、`/api/admin/logs` 行数增长。
+3. 左侧选中 **Retrain**，同样手动触发一次，确认 summary 中指标齐全、`/api/dashboard/mountain-index` 返回 `lr-v1`。
+
+### 告警、暂停与恢复
+
+- 任务失败时，GitHub 默认向仓库所有者发送邮件；如需其他成员接收，可在 **Actions → 对应 workflow → Subscribe** 订阅通知。
+- 暂停：进入 **Actions → 对应 workflow → ⋯ → Disable**。
+- 恢复：同一菜单选择 **Enable**。
+- 若文档间存在重复表述，以本节为准。
+
 ## 环境变量
 
 | 变量 | 必填 | 说明 |

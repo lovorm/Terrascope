@@ -29,3 +29,4 @@
 - P1 接入 p0-server 后，将 vendor 与 index.html 一同放入服务器静态目录即可，无需改代码。
 - 如需自定义域名（如 yunqi.example.com），三个平台免费版均支持绑定。
 - 报名/答辩材料中引用演示链接时，建议同时附一句"全部数据可溯源、演示版标注数据来源"口径。
+- 后端 Actions 定时任务（Secrets 配置、手动验证、告警与暂停）见 p0-server/README.md 的「运维（Actions 定时任务）」一节。
