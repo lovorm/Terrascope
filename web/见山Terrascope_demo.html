@@ -21,6 +21,13 @@
     --warm-orange:#d97744;
   }
   *{font-family:'PingFang SC','Microsoft YaHei','Hiragino Sans GB','SimSun',sans-serif;}
+  /* 东巴文字体 DongbaType v0.1 —— 来源：dongba 仓库，字形为 U+E001–U+E00A 私用区 */
+  @font-face{
+    font-family:'DongbaType';
+    src:url('fonts/DongbaType-v0.1.woff2') format('woff2'),
+        url('fonts/DongbaType-v0.1.0.ttf') format('truetype');
+    font-display:swap;
+  }
   html{scroll-behavior:smooth;}
   body{background:#fdfbf7;color:#1a1a1a;}
   .hero-bg{
@@ -42,6 +49,9 @@
   .nav-link:hover::after,.nav-link.active::after{width:100%;}
   .stat-num{font-family:'Georgia',serif;font-weight:700;background:linear-gradient(135deg,var(--daba-gold),var(--warm-orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .daba-char{font-family:'KaiTi','STKaiti',serif;color:var(--daba-gold);font-size:1.4em;}
+  /* 东巴字形容器：使用自建 DongbaType 字体渲染私用区字形 */
+  .daba-glyph{font-family:'DongbaType','KaiTi','STKaiti',serif;line-height:1;
+    color:var(--daba-gold);text-shadow:0 2px 10px rgba(193,154,75,.25);}
   .section-title::before{content:'';display:inline-block;width:6px;height:28px;background:var(--daba-gold);margin-right:14px;vertical-align:middle;border-radius:2px;}
   .lashi-card{background:linear-gradient(135deg,#e8f5ed,#f5faf2);border-left:4px solid var(--lashi-green);}
   .snow-card{background:linear-gradient(135deg,#e8f0f5,#f5f9fc);border-left:4px solid var(--naxi-blue);}
@@ -548,10 +558,10 @@
         </div>
         <div class="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
           <div class="flex items-center gap-5">
-            <div id="dabaGlyph" class="daba-char text-7xl" style="color:var(--daba-gold);">❄</div>
+            <div id="dabaGlyph" class="daba-glyph text-7xl" aria-label="东巴文字形">&#xE001;</div>
             <div>
               <div class="text-2xl font-bold mb-1" id="dabaWord">雪</div>
-              <div class="text-xs opacity-70" id="dabaPinyin">东巴字形（象形示意）</div>
+              <div class="text-xs opacity-70" id="dabaPinyin">东巴文 · 字表 V1</div>
             </div>
           </div>
           <div class="mt-4 text-sm opacity-90" id="dabaGlyphDesc">字形：连绵雪峰之下缀以三点，示雪花飘落之形。</div>
@@ -559,7 +569,7 @@
           <div class="mt-2 text-sm opacity-80" id="dabaNote">文化注：玉龙雪山被纳西先民尊为神山，"雪"是圣洁的象征。</div>
         </div>
         <div class="mt-4 text-xs opacity-60">
-          东巴文数字图鉴库（字形 · 读音 · 释义对照）P1 上线；词条经文化顾问审校后发布。小程序每日一词推送同步开放。
+          字形来自自建东巴文字体 DongbaType v0.1（10 字 · 字表 V1）；词条经文化顾问审校后随图鉴库扩字发布。小程序每日一词推送同步开放。
         </div>
       </div>
 
@@ -1047,24 +1057,38 @@ waterChart.setOption({
   ]
 });
 
-// 东巴文每日一词（词条释义经文化顾问校订后于 P1 正式发布，此处为演示词条）
+// 东巴文每日一词（字形来自自建 DongbaType 字体，码位为私用区 U+E001–U+E00A）
+// 词条释义经文化顾问校订后于 P1 正式发布，此处为演示词条
 const dabaWords = [
-  { glyph: '❄', word: '雪', desc: '字形：连绵雪峰之下缀以三点，示雪花飘落之形。', meaning: '释义：冰雪。', note: '文化注：玉龙雪山被纳西先民尊为神山，"雪"是圣洁的象征。' },
-  { glyph: '💧', word: '水', desc: '字形：一股泉水自山涧流出，波纹点点。', meaning: '释义：水。', note: '文化注：纳西人敬水，古城三眼井"头饮、二洗、三灌"的规矩沿用至今。' },
-  { glyph: '⛰️', word: '山', desc: '字形：三峰并立。', meaning: '释义：山。', note: '文化注：创世神话中，居那什罗神山是撑起宇宙的中柱。' },
-  { glyph: '🌙', word: '月', desc: '字形：一弯新月悬于天空。', meaning: '释义：月亮。', note: '文化注：纳西先民观月定农时，月亮是"天上的历书"。' },
-  { glyph: '🏠', word: '家', desc: '字形：人字形屋顶的木构房屋之形。', meaning: '释义：家、房屋。', note: '文化注："回到家园"是东巴经典中常见的祝祷语。' },
+  { cp: 0xE001, word: '雪', desc: '字形：连绵雪峰之下缀以三点，示雪花飘落之形。', meaning: '释义：冰雪。', note: '文化注：玉龙雪山被纳西先民尊为神山，"雪"是圣洁的象征。' },
+  { cp: 0xE002, word: '水', desc: '字形：一股泉水自山涧流出，波纹点点。', meaning: '释义：水。', note: '文化注：纳西人敬水，古城三眼井"头饮、二洗、三灌"的规矩沿用至今。' },
+  { cp: 0xE003, word: '山', desc: '字形：三峰并立。', meaning: '释义：山。', note: '文化注：创世神话中，居那什罗神山是撑起宇宙的中柱。' },
+  { cp: 0xE004, word: '月', desc: '字形：一弯新月悬于天空。', meaning: '释义：月亮。', note: '文化注：纳西先民观月定农时，月亮是"天上的历书"。' },
+  { cp: 0xE005, word: '家', desc: '字形：人字形屋顶的木构房屋之形。', meaning: '释义：家、房屋。', note: '文化注："回到家园"是东巴经典中常见的祝祷语。' },
+  { cp: 0xE006, word: '天', desc: '字形：苍穹覆于顶上之形。', meaning: '释义：天空。', note: '文化注：东巴经以"天"与"地"对举，构成万物生成的起点。' },
+  { cp: 0xE007, word: '地', desc: '字形：大地承载之形。', meaning: '释义：大地。', note: '文化注：纳西先民把土地视为母亲，春耕前有祭地之俗。' },
+  { cp: 0xE008, word: '人', desc: '字形：直立人形侧影，张臂而立。', meaning: '释义：人类。', note: '文化注：东巴文中"人"象人站立之形，与"山""水"同为一等基础字。' },
+  { cp: 0xE009, word: '日', desc: '字形：日轮当空之形。', meaning: '释义：太阳。', note: '文化注：日月并见于东巴经开篇，是时间秩序的最初刻度。' },
+  { cp: 0xE00A, word: '石', desc: '字形：岩石垒叠之形。', meaning: '释义：石头。', note: '文化注：丽江古城街巷皆铺五花石，石是纳西聚落最日常的底色。' },
 ];
 // "每日一词"按日期轮换：以 UTC 天数取模，同一天打开始终是同一个词
 let dabaIdx = Math.floor(Date.now() / 86400000) % dabaWords.length;
 let dabaUserIdx = null; // 用户手动切换后以手动为准
 function renderDaba() {
   const w = dabaWords[dabaIdx];
-  document.getElementById('dabaGlyph').textContent = w.glyph;
+  document.getElementById('dabaGlyph').textContent = String.fromCodePoint(w.cp);
   document.getElementById('dabaWord').textContent = w.word;
   document.getElementById('dabaGlyphDesc').textContent = w.desc;
   document.getElementById('dabaMeaning').textContent = w.meaning;
   document.getElementById('dabaNote').textContent = w.note;
+}
+// 字体未就绪时先给出提示，避免私用区字形显示为方块
+if (document.fonts && document.fonts.load) {
+  document.fonts.load('72px DongbaType').then(() => document.fonts.ready).then(() => {
+    document.getElementById('dabaPinyin').textContent = '东巴文 · 字表 V1';
+  }).catch(() => {
+    document.getElementById('dabaPinyin').textContent = '东巴文 · 字体加载失败';
+  });
 }
 document.getElementById('dabaNext').addEventListener('click', () => {
   if (dabaUserIdx === null) dabaUserIdx = dabaIdx;
